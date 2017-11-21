@@ -1,4 +1,0 @@
-
-####
-10-19-2017 --- moved data file [2012-2016_nearshore-survey_largemouth-bass.csv] into Raw-Data folder to begin clean up and prep for condition analysis. this file was renamed from [NS_2012-2016_Compiled_7-10-17.csv] which should only contain fish from the nearshore survey. 
-Note: 2012 is from Ross project to standardize the survey. and weights are missing from 2013 data because it was entered into excell in two tabs and there was no FID to link the weight length data together.
