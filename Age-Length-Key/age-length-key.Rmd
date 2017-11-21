@@ -1,0 +1,96 @@
+---
+title: "Age-Length Key"
+author: "Alex J. Benecke"
+date: "January 31, 2017"
+output: pdf_document
+header-includes:  
+    - \setlength\parindent{24pt}
+    - \usepackage{indentfirst}
+editor_options: 
+  chunk_output_type: console
+---
+
+ Age-length keys will be produced from the measured TL and the age-at-capture of each Largemouth Bass. All samples will be divided into 25 mm bins?
+size bins (denoted $L_{i}$) and grouped by age ($A_{j}$). The probability that a fish is a particular age given its size ($p_{j|i}$) will be calculated by dividing the number of fish ($n_{ji}$) in the $i^th$ length interval of the $j^th$ age by the total number of fish in that size interval. The calculation for $p_{j|i}$ will be performed in R using the FSA, magrittr, and dplyr packages according to the methods described by Derek Ogle (2016a) (Bache and Wickham 2016, Ogle 2016b, Wickham and Francois 2016).
+
+```{r Loading Packages,tidy=TRUE}
+library(FSA)
+library(magrittr)
+library(dplyr)
+library(nnet)
+```
+```{r Load Data, tidy=TRUE}
+LMB <- read.csv("Data/Clean-Data/2016_largemouth-bass_clean.csv") %>%
+  select(FID,Site,AgeCap,LenCap,WTg,SEXCON,Sex) 
+
+LMB$FID <- factor(LMB$FID)
+LMB$Site <- factor(LMB$Site)
+LMB$SEXCON <- factor(LMB$SEXCON)
+LMB$Sex <- factor(LMB$Sex)
+
+length(LMB$FID)
+LMB[LMB$FID==55,]
+#LMB <- LMB[-55,] ## Remove FID 55
+length(LMB$FID)
+LMB <- filterD(LMB,!is.na(FID))
+
+str(LMB)
+headtail(LMB)
+```
+
+```{r Create Length intervals, tidy=TRUE}
+LMB %<>% mutate(lencat25=lencat(LenCap,w=25))
+headtail(LMB)
+```
+```{r Seperate Aged and Unaged (NA) Fish,tidy=TRUE}
+is.na(LMB$AgeCap)
+
+LMB.unaged <- filter(LMB, is.na(AgeCap))
+headtail(LMB.unaged)
+all(is.na(LMB.unaged$AgeCap)) # Better be True
+
+LMB.aged <- filter(LMB,!is.na(AgeCap))
+headtail(LMB.aged)
+any(is.na(LMB.aged$AgeCap)) # Better be False
+```
+
+```{r Observed Age-Length Key,tidy=TRUE}
+(alk.freq <- xtabs(~lencat25+AgeCap,data = LMB.aged))
+
+rowSums(alk.freq)
+
+alk <- prop.table(alk.freq,margin = 1)
+round(alk,3)
+
+### Some weirdness here I have a 450 mm 2 year old (FID 55 removed) and 425 mm 6 yr old while my 8 year old is 400 mm ? Check ages on some of these!!!
+```
+
+```{r Smoothed or Modeled Age-Length Key, tidy=TRUE}
+LMB.mlr <- multinom(AgeCap~lencat25,data=LMB.aged,maxit=500)
+```
+
+```{r Predicted Age at Length, tidy=TRUE}
+lens <- seq(100,650,25)
+alk.sm <- predict(LMB.mlr,data.frame(lencat25=lens),type = "probs")
+row.names(alk.sm) <- lens # for clarity
+round(alk.sm,3) #for display purposes
+
+### Much better but still double check the ages from before!!!
+```
+
+### Smoothed Age-Length Key Model
+```{r Displaying the Smoothed Age Length Key Graphically, tidy=TRUE}
+### Smoothed ALK Model
+alkPlot(alk.sm,type = "area",showLegend = TRUE,leg.cex = 0.7,xlab = "Total Langth (mm)")
+
+alkPlot(alk.sm,type = "bubble", xlab = "Total Length (mm)")
+```
+
+### Age-Length Key
+```{r Displaying the Age Length Key Graphically , tidy=TRUE}
+alkPlot(alk,type = "area",showLegend = TRUE,leg.cex = 0.7,xlab = "Total Langth (mm)")
+
+alkPlot(alk,type = "bubble", xlab = "Total Length (mm)")
+### Doesn't Look Good!!!
+```
+

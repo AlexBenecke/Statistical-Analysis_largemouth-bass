@@ -1,0 +1,68 @@
+---
+title: "Data Prep"
+author: "Alex J. Benecke"
+date: "June 15, 2017"
+output: pdf_document
+header-includes:
+    - \setlength\parindent{24pt}
+    - \usepackage{indentfirst}
+editor_options: 
+  chunk_output_type: console
+---
+```{r , include=FALSE}
+library(FSA)
+library(tidyverse)
+library(stringr)
+library(magrittr)
+
+```
+```{r Load and clean Data}
+LMB <- read.csv("Data/Raw-Data/2016_largemouth-bass_raw.csv") %>%
+  select(FID,Site,AgeCap:Sex) %>%
+  arrange(FID)
+
+### Making factors factors
+LMB$FID <- factor(LMB$FID)
+LMB$Site <- factor(LMB$Site)
+LMB$SEXCON <- factor(LMB$SEXCON)
+LMB$Sex <- factor(LMB$Sex)
+str(LMB)
+
+### Removing Outliers
+length(LMB$FID)
+LMB[LMB$FID==55,];FID55 <- as.numeric(rownames(LMB[LMB$FID==55,])) ### Data Entry Error
+#LMB[LMB$FID==89,];FID89 <- as.numeric(rownames(LMB[LMB$FID==89,])) ### Unknown Sex > ezr model fitting
+rm <- LMB[c(FID55),]; rm <- filterD(rm,!is.na(FID)) ### Create df containing removed fish
+LMB <- LMB[-c(FID55),] %>%
+  filterD(!is.na(FID)) ### Remove outliers
+length(LMB$FID)
+#write.csv(LMB,file="Data/Clean-Data/2016_largemouth-bass_clean.csv")
+```
+
+Now I need to put the data into one observation per line (long) format.
+
+```{r Put Data into Long Format, tidy=TRUE}
+LMBL <- gather(LMB,Agei,Radi,Anu1:Anu9) %>%
+  arrange(FID,Agei)
+```
+
+  Next I will clean up the Agei variable so that it contains only numbers, is numeric, has no NA values, and is always less than or equal to the age-at-capture.
+
+```{r Clean LMBL, tidy=TRUE}
+str_sub(LMBL$Agei,start=1,end=3) <- ""
+LMBL %<>% mutate(Agei=as.numeric(Agei)) %>%
+  filterD(!is.na(Radi)) %>%
+  filterD(Agei<=AgeCap)
+```
+
+  Next I will perform my back-calculation using the Biological-Intercept model. Where Otoloth radius at the time of formation ($O_{0}$) is 0.035 mm (Miller and Storck 1982) and the Length of the fish at time of otolith formation ($L_{0}$) is 3.9 mm (Heang 1982).
+
+```{r Back-Calculation, tidy=TRUE}
+LMBL$BI.len <- with(LMBL,LenCap+(Radi-RadCap)*(LenCap-3.9)*(RadCap-0.035)^-1)
+```
+```{r, eval=FALSE}
+#write.csv(LMBL,"Data/Clean-Data/2016_largemouth-bass_long-format.csv")
+```
+
+  I have commented out the final write.csv command because I do not want to accidently remake my data file.
+

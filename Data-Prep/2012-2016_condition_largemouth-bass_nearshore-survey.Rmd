@@ -1,0 +1,110 @@
+---
+title: "Condition of Lake Erie largemouth bass sampled in Nearshore survey 2012-2016"
+author: "Alex Benecke"
+date: "October 19, 2017"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup and load packages, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(FSA)
+library(car) ## befor dplyr reduce conflicts with MASS
+library(dplyr)
+library(plotrix)
+library(multcomp)
+library(tidyverse)
+library(magrittr)
+library(Matching)
+```
+
+
+```{r}
+Cond <- read.csv("Data/Raw-Data/2012-2016_nearshore-survey_largemouth-bass.csv") %>%
+  mutate(logW=log10(Weight),logL=log10(Length))
+Cond$fyr <- factor(Cond$Year)
+
+str(Cond)
+headtail(Cond)
+```
+```{r Getting Standard Weight values from literature (FSA Package)}
+(wsLMB <- wsVal("Largemouth Bass", simplify = TRUE))
+(wsLMB_min <- wsLMB[["min.TL"]])
+(wsLMB_int <- wsLMB[["int"]])
+(wsLMB_slp <- wsLMB[["slope"]])
+```
+
+```{r Calculating Standard and Relative Weight}
+Cond %<>% mutate(Ws = 10^(wsLMB_int+wsLMB_slp*logL),
+                 Wr=(Weight/Ws)*100)
+headtail(Cond[,c(1,3,14,15)])
+headtail(Cond[Cond$Year==2013,]) ### No Wr for 2013
+```
+```{r Seperating out only Stock Length individuals and removing NA's}
+Stock <- Cond %>%
+  filter(Length>=200) %>%
+  mutate(gcat=lencat(Length, breaks = psdVal("Largemouth Bass"),
+                     use.names = TRUE)) %>%  ### create Gabelhouse Length Categories
+  filterD(!is.na(Wr))                     ### Remove 2013 b/c no Wr Data
+headtail(Stock[,c(1,3,14:16)])
+#write.csv(Stock,file="Data/Clean-Data/2012-2016_nearshore-survey-largemouth-bass_CLEAN.csv")
+```
+
+  Created Clean data sile with the Wr standard weight and gabelhouse length category for stock length individuals from 20122014,2015, and 2016. The file name is 2012-2016_nearshore-survey-largemouth-bass_CLEAN.csv.
+
+```{r Summarizing Wr Data for 2012,2014,2015,2016}
+Summarize(Wr~fyr, data=Stock, digits = 0) ### Wr Weight by Year
+
+(Wr_fyr.gcat <- Summarize(Wr~fyr*gcat, data=Stock))
+str(Wr_fyr.gcat)
+
+#write.csv(Wr_fyr.gcat,file = "Data/Clean-Data/relative-weight.csv")
+```
+
+  I have created a file with the relative weight of each gabelhouse length category for each year. The file name is relative-weight.csv.
+
+
+#############################################################################
+### The Steps Below are no longer necessary
+
+  The next step is to get a summary of the relative weight for each gabel house length categoriy and year. Really All I am Interested in is the Wr weight for Quality and Preferred length individuals. So I will just seperate these out I think.
+
+
+```{r}
+Pref <- filterD(Stock,gcat=="preferred")
+str(Pref)
+
+(Wr_Pref <- Summarize(Wr~fyr,data = Pref))
+str(Wr_Pref)
+
+#write.csv(Wr_Pref,file = "Data/Clean-Data/preferred-length_relative-weight.csv")
+```
+
+```{r}
+Qual <- filterD(Stock,gcat=="quality")
+str(Qual)
+
+(Wr_Qual <- Summarize(Wr~fyr,data = Qual))
+str(Wr_Qual)
+
+#write.csv(Wr_Qual,file = "Data/Clean-Data/quality-length_relative-weight.csv")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

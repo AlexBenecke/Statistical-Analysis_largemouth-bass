@@ -1,0 +1,254 @@
+---
+title: "Age Bias and Precision"
+author: "Alex J. Benecke"
+date: "May 18, 2017"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+```{r Load Packages, include=FALSE}
+library(FSA)
+library(tidyr)
+library(magrittr)
+library(dplyr)
+```
+```{r Load and Prepare Data, include=TRUE}
+Age <- read.csv("Data/Raw-Data/2016_largemouth-bass_age-estimates_raw.csv") %>%
+  select(FID:Difference) %>%
+  arrange(FID)
+Age$FID <- factor(Age$FID)
+length(Age$FID)
+Age[Age$FID==55,];FID55 <- as.numeric(rownames(Age[Age$FID==55,]))
+Age <- Age[-c(FID55),] %>%
+  filterD(!is.na(FID)) ### Remove outliers
+length(Age$FID)
+```
+```{r}
+str(Age)
+#write.csv(Age,file="Data/Clean-Data/2016_largemouth-bass_age-estimates_clean.csv")
+```
+
+# Comparing Age Estimates Between 3 Readers
+
+```{r Jim and Alex Age Bias Object, include=TRUE}
+ab.AB <- ageBias(AgerA~AgerB, data=Age, ref.lab = "Ager B", nref.lab = "Ager A")
+```
+```{r Alex and Steve Bias Object, include=TRUE}
+ab.AC <- ageBias(AgerA~AgerC,data = Age,ref.lab = "Ager C", nref.lab = "Ager A")
+```
+```{r Jim and Steve Bias Object, include=TRUE}
+ab.BC <- ageBias(AgerB~AgerC,data = Age,ref.lab = "Ager C", nref.lab = "Ager B")
+```
+
+\newpage
+
+## Bias
+
+ Three readers made indipendant reads of Largemouth Bass otoliths to determine the age of Largemouth Bass in our sample. Now we will look for bias between the 3 readers (readers A, B, C). We will use age bias plots to do this.
+
+### Bias Alex (AgerA) vs Jim (AgerB) Age Est.
+```{r Jim and Alex Age Bias Summary Statistics Display, echo=TRUE, tidy=TRUE}
+plot(ab.AB,
+     col.CIsig = "Black",
+     show.range = TRUE,
+     main="",
+     bty="n",
+     lwd = 2,
+     lwd.CI = 2,
+     lwd.range = 2,
+     lwd.agree = 2,
+     col.CI = "red",
+     col.range = "red",
+     cex.n = 1.25,
+     cex.axis=1.5,
+     yaxt = "n",
+     xlab="",ylab="")
+axis(2,at=seq(0,8,1),cex.axis=1.5)
+mtext("Ager A",side = 2, cex = 1.5,line = 2.5)
+mtext("Ager B",side = 1, cex = 1.5,line = 2.5)
+mtext("Age Estimate Ager A vs. B",side = 3, cex = 1.5,line = 2.5)
+
+### Statistics behind age bias plot
+SumAB.bias <- summary(ab.AB,what = "bias")
+summary(ab.AB,what = "symmetry") ### Alex's age est (A) not biased compared to Jim (B)
+summary(ab.AB,what = "table")
+```
+
+### Bias Alex (AgerA) vs Steve (AgerC) Age Est.
+```{r Alex and Steve Age Bias Summary Statistics Display, echo=TRUE, tidy=TRUE}
+plot(ab.AC,
+     col.CIsig = "Black",
+     show.range = TRUE,
+     main="",
+     bty="n",
+     lwd = 2,
+     lwd.CI = 2,
+     lwd.range = 2,
+     lwd.agree = 2,
+     col.CI = "red",
+     col.range = "red",
+     cex.n = 1.25,
+     cex.axis=1.5,
+     yaxt = "n",
+     xlab="",ylab="")
+axis(2,at=seq(0,8,1),cex.axis=1.5)
+mtext("Ager A",side = 2, cex = 1.5,line = 2.5)
+mtext("Ager C",side = 1, cex = 1.5,line = 2.5)
+mtext("Age Estimate Ager A vs. C",side = 3, cex = 1.5,line = 2.5)
+
+### Statistics behind age bias plot
+SumAC.bias <- summary(ab.AC,what = "bias")
+summary(ab.AC,what = "symmetry") # McNemar Suggests some age Bias between Alex and Steve
+summary(ab.AC,what = "table")
+```
+
+### Bias Steve (AgerC) vs Jim (AgerB) Age Est.
+```{r Jim and Steve Age Bias Summary Statistics Display, echo=TRUE, tidy=TRUE}
+plot(ab.BC,col.CIsig = "Black",show.range = TRUE,main="Age Est. Ager B vs C")
+```
+\newpage
+```{r Jim and Steve Age Bias Summary Statistics Display (Continued),, echo=TRUE, tidy=TRUE}
+### Statistics behind age bias plot
+summary(ab.BC,what = "bias")
+summary(ab.BC,what = "symmetry") # close but no age bias between jim and steve
+summary(ab.BC,what = "table")
+```
+
+## Precision
+
+We will assess precision of age estimates using average coeficcient of variance but will also look at some other metrics.
+
+```{r, Precision of age estimation, tidy=TRUE}
+ap.ABC <- agePrecision(~AgerA+AgerB+AgerC, data=Age)
+
+summary(ap.ABC, what = "difference")
+
+SumABC.Prec <- summary(ap.ABC, what = "precision")
+```
+
+\newpage
+
+| FID | AgerA (Alex) | AgerB (Jim) | AgerC (Steve) |
+|:----:|:----:|:----:|:----:|
+| 7 |  1 |  1 | 4  |
+| 27 |  1 | 1 | 2  |
+| 29 |  1 | 1  |  2 |
+| 34 |  1 | 1  |  2 |
+| 35  | 1  |  2 | 2  |
+| 63  | 1  |  2 | 2  |
+| 71  |  2 |  2 | 1  |
+| 90  | 2  |  1 | 2  |
+| 122 |  1 |  1 | 2  |
+
+  There is some dissagreement about the age of some fish (FIDs 7,27,29,34,35,63,71,90,122) and some have not been aged at all (FIDs 6,28,79,81,124). I may remove these fish when fitting the growth model.
+  
+  Age estimates were similar between all three readers (AgerA, AgerB, and AgerC). AgerA was found to underestimate the ages of 2 year old fish when compared to AgerC (t =`r round(SumAC.bias[2,7],2)`, p = `r round(SumAC.bias[2,8],3)`) but not when compared to AgerB (t = `r round(SumAB.bias[2,7],2)`, p = `r round(SumAB.bias[2,8],3)`). We found no other significant bias in the age estimations made by the three readers. **Fish with inconsistent age estimates** ($n = 9$) **were removed from later analysis to eliminate this bias [(or) will be assigned ages based on the majority agreement between 2 readers]**. Overall, there was a high level of precision between age estimates provided by our three readers ($n =$ `r SumABC.Prec[[2]]`, `r round(SumABC.Prec[[6]],2)` \% Agreement, ACV = `r round(SumABC.Prec[[4]],2)`).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

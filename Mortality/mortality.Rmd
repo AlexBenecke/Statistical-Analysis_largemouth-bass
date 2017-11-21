@@ -1,0 +1,104 @@
+---
+title: "Mortality"
+author: "Alex J. Benecke"
+date: "February 8, 2017"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+
+see smith et al. 2012 
+
+```{r Load Packages, include=FALSE, tidy=TRUE}
+library(FSA)
+library(car)
+library(dplyr)
+library(magrittr)
+library(Rcapture)
+```
+```{r Load Data, include=FALSE, tidy=TRUE}
+LMB <- read.csv("Data/Clean-Data/2016_largemouth-bass_clean.csv") %>%
+  select(FID,Site,AgeCap,LenCap,WTg,SEXCON,Sex) %>%
+  filterD(!is.na(AgeCap)) %>%
+  arrange(FID)
+LMB$FID <- factor(LMB$FID)
+LMB$Site <- factor(LMB$Site)
+LMB$SEXCON <- factor(LMB$SEXCON)
+LMB$Sex <- factor(LMB$Sex)
+str(LMB)
+headtail(LMB)
+length(LMB$FID)
+LMB[LMB$FID==55,];FID55 <- as.numeric(rownames(LMB[LMB$FID==55,]))
+#LMB <- LMB[-c(FID55),] %>%
+#  filterD(!is.na(FID))
+#length(LMB$FID)
+
+### Create Catch df
+catch <- data.frame(table(LMB$AgeCap))
+names(catch) <- c(Var1 = "Age", Freq = "ct")
+catch$Age <- as.numeric(catch$Age)
+catch
+str(catch)
+```
+
+```{r Catch per age, echo=FALSE, tidy=TRUE}
+plot(log(ct)~Age,data=catch,xlab="Age (years)",ylab="log Catch",pch=19)
+```
+
+
+```{r Chapman-Robson Method, tidy=TRUE}
+LMB.cr <- chapmanRobson(ct~Age,data=catch,ages2use=2:8)
+cbind(summary(LMB.cr),confint(LMB.cr))
+A.cr <- 1-exp(-coef(LMB.cr)[[2]])
+A.cr
+Acr.CI <- 1-exp(-confint(LMB.cr)[2,])
+Acr.CI
+
+plot(LMB.cr,
+     cex.lab=2,
+     cex.est = 2,
+     bty="n")
+
+```
+
+  Chapman-Robson $A = 0.4502858, 95\% CI 0.3209307 - 0.5550002$.
+
+Chapman-Robson method is prefered (Dunn et al. 2002,Smith et al. 2012 {D.Ogle 2016 Book})
+
+  Instantaneous annual mortality (Chapman-Robson Method, $Z = 0.5983568, sde = 0.1078207, LCI = 0.3870321, UCI = 0.8096815$). Annual mortality calculated from instantaneous annual mortality ($A = 0.4502858$).
+
+  Instantaneous annual mortality ($Z$) was found to be $0.5983568$ with approximate $95$\% confidence intervals between $0.3870321$ and $0.8096815$. The estimated annual mortality rate ($A$) is $0.4502858$ with approximate $95$\% confidence intervals between $0.3209307$ and $0.5550002$. 
+
+
+## Remove age 3 Yearclass 2013
+
+```{r Chapman-Robson Method Without Age 3, tidy=TRUE}
+LMB.cr_B <- chapmanRobson(ct~Age,data=catch,ages2use=c(2,4:8))
+cbind(summary(LMB.cr_B),confint(LMB.cr_B))
+A.crB <- 1-exp(-coef(LMB.cr_B)[[2]])
+A.crB
+Acr.CIB <- 1-exp(-confint(LMB.cr_B)[2,])
+Acr.CIB
+
+plot(LMB.cr_B)
+```
+
+
+
+```{r Regression Method (Single Estimate), tidy=TRUE}
+tmp <- filter(catch,Age>=2) %>% mutate(lnct=log(ct))
+lm1 <- lm(lnct~Age,data=tmp)
+coef(lm1)
+confint(lm1)
+### weighted regression
+tmp%<>% mutate(wts=predict(lm1))
+lm2 <- lm(lnct~Age,data=tmp,weights = wts)
+coef(lm2)
+confint(lm2)
+
+### Same thing but with catchCurve() from FSA
+LMB.lm <- catchCurve(ct~Age,data=catch,ages2use=2:8,weighted = TRUE)
+cbind(summary(LMB.lm),confint(LMB.lm))
+plot(LMB.lm)
+```
+
