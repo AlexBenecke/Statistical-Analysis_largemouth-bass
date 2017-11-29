@@ -48,11 +48,21 @@ plot(log(ct)~Age,data=catch,xlab="Age (years)",ylab="log Catch",pch=19)
 
 ```{r Chapman-Robson Method, tidy=TRUE}
 LMB.cr <- chapmanRobson(ct~Age,data=catch,ages2use=2:8)
-cbind(summary(LMB.cr),confint(LMB.cr))
-A.cr <- 1-exp(-coef(LMB.cr)[[2]])
-A.cr
-Acr.CI <- 1-exp(-confint(LMB.cr)[2,])
-Acr.CI
+
+### Show the survival and Instantaneous mortality estimates 
+### from chapman-robson method
+(cr.mort <- cbind(summary(LMB.cr),confint(LMB.cr)))
+
+### Calc Annual Mortality from Z
+(A.cr <- 1-exp(-coef(LMB.cr)[[2]]))
+### Calc Annual Mort 95% CI
+(Acr.CI <- 1-exp(-confint(LMB.cr)[2,]))
+### Make nice table
+(mort.A <- c(A.cr, Acr.CI)) 
+names(mort.A) <- c(v1="Estimate",v2="95% LCI",v3="95% UCI")
+### Show all mortality and survival estimates
+cr.mort
+mort.A
 
 plot(LMB.cr,
      cex.lab=2,
@@ -69,6 +79,8 @@ Chapman-Robson method is prefered (Dunn et al. 2002,Smith et al. 2012 {D.Ogle 20
 
   Instantaneous annual mortality ($Z$) was found to be $0.5983568$ with approximate $95$\% confidence intervals between $0.3870321$ and $0.8096815$. The estimated annual mortality rate ($A$) is $0.4502858$ with approximate $95$\% confidence intervals between $0.3209307$ and $0.5550002$. 
 
+
+#### Below I explore other calculations for mortality
 
 ## Remove age 3 Yearclass 2013
 
