@@ -49,9 +49,9 @@ LVB(5, Linf = c(422.8, 0.39, -0.40)) ### Should be the same output
 ```
 
 
-### nlme mod (No Sex Term)
+### VBGM Fit via NLME to Both Sexes, {nlme.mod}
 
-```{r SexMod0, eval=FALSE}
+```{r No Sex term nlme Model, eval=FALSE}
 nlme.mod <- nlme::nlme(BI.len ~ LVB(Agei, Linf, K, t0), data = datgr,
                             fixed = list(Linf ~ 1, K ~ 1, t0 ~ 1),
                             random = Linf+K+t0 ~ 1,
@@ -66,12 +66,12 @@ nlme.mod <- nlme::nlme(BI.len ~ LVB(Agei, Linf, K, t0), data = datgr,
                                         msMaxIter=100,
                                         niterEM=100))
 #save(nlme.mod, 
-#     file = "Statistical-Analysis/Model-Output/nlme.mod.rda")
+#     file = "model-output/nlme.mod.rda")
 ```
 
 
 ```{r Load nlme.mod, include=FALSE}
-load("Statistical-Analysis/Model-Output/nlme.mod.rda")
+load("model-output/nlme.mod.rda")
 ```
 ```{r Results of nlme.mod, echo=FALSE}
 print(paste("Iterations =", nlme.mod$numIter))
@@ -89,7 +89,7 @@ coef(nlme.mod)[1,3]
 
 ```{r}
 Axes <- seq(100,450,by=50)
-Years <- seq(0,8,by=1)
+Years <- seq(0,10,by=1)
 
 ## plot individual fish data
 ## plot the fixed parameter model
@@ -98,8 +98,8 @@ Years <- seq(0,8,by=1)
 plot(jitter(LMBL$Agei),LMBL$BI.len,
      col=rgb(0,1,0,0.25, maxColorValue=1),
      pch=19,
-     ylim=c(100,450),
-     xlim=c(0,8),
+     ylim=c(100,475),
+     xlim=c(0,10),
      xlab = "Age (Years)",
      ylab = "Back-Calculated Length (mm)",
      bty="n",
@@ -111,19 +111,187 @@ axis(1,at = Years)
 
 abline(h=425.6965204,lty=2)
 
-x <- seq(1,8,by=1)
+x <- seq(1,11,by=1)
 lines(x, fixef(nlme.mod)[1] * (1 - exp(-fixef(nlme.mod)[2] * (x - (fixef(nlme.mod)[3])))),
       lwd=3, 
       col="black")
 
-for(i in 1:125){
+for(i in 1:126){
 lines(x, coef(nlme.mod)[i,1] * (1 - exp(- coef(nlme.mod)[i,2]   
 * (x - ( coef(nlme.mod)[i,3] )))),lwd=3,col=gray(0,0.1)) }
 
 legend("topleft",
-       legend = print(expression(L[i]==422.17 %*% (1 - e **{-0.41 %*% (t[i] + 0.36)}))),
+       legend = print(expression(L[i]==426 %*% (1 - e **{-0.40 %*% (t[i] + 0.37)}))),
        bty="n",
        cex=1.15)
 
 ```
 
+
+## Modeling Fixed Effects for Sex  
+
+  **Lets look at the von Bertalanffy growth model fits with a fixed sex term on the parameter estimates.**
+  
+  
+  In order to fit the sex model I will have to remove the individual with no sex. In order to compare the sex model to the no sex model I will have to re fit the no sex model without the individual with unknown sex. this means making new df excluding this individual. making a new grouped data object. and rerunning the nlme function.
+
+#### Removing the individual with no sex (FID=89??)
+```{r remove no sex individual}
+### Just looking at data
+head(LMBL)
+### Finding fish with unknown sex
+(unknown.sex <- filterD(LMBL,Sex==0))
+### Getting row number for fish with the unknown sex
+(FID89 <- as.numeric(row.names(LMBL[LMBL$Sex==0,])))
+### removing the fish with unknown sex from the data set
+length(LMBL$FID) ### just seeing the number of rows in the data set
+length(unique(LMBL$FID)) ### just seeing the number of fish
+LMBL <- LMBL[-c(FID89),]
+length(LMBL$FID)
+length(unique(LMBL$FID)) ### Good! looks like only FID 89 was removed
+### Lets make sure there is no empty row in my data 
+LMBL <- filterD(LMBL,!is.na(FID))
+### and lets just take a quick look at the data
+str(LMBL)
+headtail(LMBL)
+```
+
+#### Remake Grouped Data Object
+```{r Group Data Without Unknown Sex Fish}
+datgr = groupedData(BI.len ~ Agei|FID, data = LMBL,
+                  labels = list(x = "Age", y = "Size"),
+                  units = list(x = "(Years)", y = "(mm)"))
+```
+
+#### Re-Fitting VBGM Without Sex Terms After Removing Unkown Sex Fish
+
+```{r No Sex Term NLME Model Without Unknown Sex Fish, eval=FALSE}
+nlme.mod2 <- nlme::nlme(BI.len ~ LVB(Agei, Linf, K, t0), data = datgr,
+                            fixed = list(Linf ~ 1, K ~ 1, t0 ~ 1),
+                            random = Linf+K+t0 ~ 1,
+                            start = list(fixed = 
+                                      c(Linf = 389.3647, 
+                                        K = 0.4359, 
+                                        t0 = -0.3127)),
+                           method= "REML",
+                           control=list(opt="nlminb",
+                                        maxIter=100,
+                                        pnlsMaxIter=100,
+                                        msMaxIter=100,
+                                        niterEM=100))
+#save(nlme.mod2, 
+#     file = "model-output/nlme.mod2.rda")
+```
+
+```{r Load nlme.mod2, include=FALSE}
+load("model-output/nlme.mod2.rda")
+```
+```{r Results of nlme.mod2, echo=FALSE}
+print(paste("Iterations =", nlme.mod2$numIter))
+summary(nlme.mod2)
+intervals(nlme.mod2)
+anova(nlme.mod2)
+plot(nlme.mod2)
+```
+ Not too different from nlme.mod as expected.
+
+### Full Sex Model, {sexmod.lkt}
+**Sex terms on all model parameters** 
+
+```{r Full Sex Model, eval=FALSE}
+sexmod.lkt <- nlme::nlme(BI.len ~ LVB(Agei, Linf, K, t0), data = datgr,
+                            fixed = list(Linf ~ Sex-1, K ~ Sex-1, t0 ~ Sex-1),
+                            random = Linf+K+t0 ~ 1,
+                            start = list(fixed = 
+                                      c(Linf = c(389.3647,389.3647),
+                                        K = c(0.4359,0.4359), 
+                                        t0 = c(-0.3127,-0.3127))),
+                           method= "REML",
+                           control=list(opt="nlminb",
+                                        maxIter=1000,
+                                        pnlsMaxIter=100,
+                                        msMaxIter=100,
+                                        niterEM=100))
+save(sexmod.lkt, 
+     file = "model-output/sexmod.lkt.rda")
+```
+
+```{r Load sexmod.lkt, include=FALSE}
+load("model-output/sexmod.lkt.rda")
+```
+```{r Results of sexmod.lkt, echo=FALSE}
+print(paste("Iterations =", sexmod.lkt$numIter))
+summary(sexmod.lkt)
+intervals(sexmod.lkt)
+anova(sexmod.lkt)
+plot(sexmod.lkt)
+```
+
+### {$L_{\infty}, K} Sex Model, {sexmod.lk}
+
+```{r L and K Sex Model, eval=FALSE}
+sexmod.lk <- nlme::nlme(BI.len ~ LVB(Agei, Linf, K, t0), data = datgr,
+                            fixed = list(Linf ~ Sex-1, K ~ Sex-1, t0 ~ 1),
+                            random = Linf+K+t0 ~ 1,
+                            start = list(fixed = 
+                                      c(Linf = c(389.3647,389.3647), 
+                                        K = c(0.4359,0.4359), 
+                                        t0 = -0.3127)),
+                           method= "REML",
+                           control=list(opt="nlminb",
+                                        maxIter=1000,
+                                        pnlsMaxIter=100,
+                                        msMaxIter=100,
+                                        niterEM=100))
+save(sexmod.lk, 
+     file = "model-output/sexmod.lk.rda")
+```
+
+### {$L_{\infty}, $t_{0}} Sex Model, {sexmod.lt}
+
+```{r L and t0 Model, eval=FALSE}
+sexmod.lt <- nlme::nlme(BI.len ~ LVB(Agei, Linf, K, t0), data = datgr,
+                            fixed = list(Linf ~ Sex-1, K ~ 1, t0 ~ Sex-1),
+                            random = Linf+K+t0 ~ 1,
+                            start = list(fixed = 
+                                      c(Linf = c(389.3647,389.3647), 
+                                        K = 0.4359, 
+                                        t0 = c(-0.3127,-0.3127))),
+                           method= "REML",
+                           control=list(opt="nlminb",
+                                        maxIter=1000,
+                                        pnlsMaxIter=100,
+                                        msMaxIter=100,
+                                        niterEM=100))
+save(sexmod.lt, 
+     file = "model-output/sexmod.lt.rda")
+```
+
+### {K, $t_0$}, Sex Model, {sexmod.kt}
+
+```{r K and t0 Sex Model, eval=FALSE}
+sexmod.kt <- nlme::nlme(BI.len ~ LVB(Agei, Linf, K, t0), data = datgr,
+                            fixed = list(Linf ~ 1, K ~ Sex-1, t0 ~ Sex-1),
+                            random = Linf+K+t0 ~ 1,
+                            start = list(fixed = 
+                                      c(Linf = 389.3647, 
+                                        K = c(0.4359,0.4359), 
+                                        t0 = c(-0.3127,-0.3127))),
+                           method= "REML",
+                           control=list(opt="nlminb",
+                                        maxIter=1000,
+                                        pnlsMaxIter=100,
+                                        msMaxIter=100,
+                                        niterEM=100))
+save(sexmod.kt, 
+     file = "model-output/sexmod.kt.rda")
+```
+
+
+### Comparing Models
+
+
+### Summary
+
+  The von Bertlanffy growth model was fit to 337 observations of length at age from 126 individuals. Five additional individuals with out age estimates were removed from the growth analysis. The maximum asymptotic length ($L_{\infty}$) fit to both male and females was estimated to be 426 mm (SE=7.7). The brody growth rate coefficient (K) was estimated as 0.40 (SE=0.02). The estimated value of $t_0$ is -0.37 (SE=0.04). Differences in the estimated growth parameters for different sexes were explored and found to be not significant(**Need to report statistics**).
+  

@@ -18,9 +18,50 @@ library(Matching)
 ```
 
 ```{r Load Data}
+PSD <- read.csv("Data/Clean-Data/2012-2016_nearshore-survey-largemouth-bass_CLEAN.csv")
 
+str(PSD)
+headtail(PSD)
+```
+  
+  My plan is to make a data file with the PSD of Prefered and Quality length largemouth bass for each year. This will be used for comparison graph against Relative weight and should provide some insight into whether the population is expiriencing slow growth (perhaps due to competition for resources) or excessive mortality (perhaps due to overfishing). Both of these things can affect the proportion of large individuals and thus angler satisfaction and may be correctable with regulatory changes. 
+  
+  ### I should probably break this all up by year first. Also I dont want 2012 ###
+  
+```{r Create length bins}
+PSD %<>% mutate(lcat20=lencat(Length,w=20))
+
+headtail(PSD)
+```
+  
+
+```{r length frequency table}
+(PSD.freq20 <- xtabs(~lcat20,data=PSD))
+### calculate the percentage of the fish in each length nin
+prop.table(PSD.freq20)*100
 ```
 
+
+Lets view a quick histogram of the frequency of fish in each length bin.
+
+```{r Hist of length freq}
+hist(~Length,data=PSD,
+     breaks = seq(min,max,20),
+     xlab="Total Length (mm)")
+```
+
+Compare years with ECDF plot pg. 111 ? Maybe later but not now?
+
+
+  Lets get started calculating Proportional Size Distributions (PSD). I mentioned earlier using the Prefered and Quality lengths, however, I think I will also look at the relative PSD of 457 mm fish prefered by anglers. This may not work though since I think these individuals are rare in my sample and perhaps absent in some years.
+
+  Lets start by looking at the frequency of fish in each gabelhouse length category.
+
+```{r gcat freq table}
+(gfreq <- xtabs~gcat,data=PSD)
+### Convert freq to percentage
+(psdXY1 <- prop.table(gfreq)*100)
+```
 
 
 
