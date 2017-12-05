@@ -1,8 +1,11 @@
 ---
-title: "Age Bias and Precision"
+title: "Bias and Precision of Age Estimates"
 author: "Alex J. Benecke"
 date: "May 18, 2017"
 output: pdf_document
+header-includes:
+    - \setlength\parindent{24pt}
+    - \usepackage{indentfirst}
 editor_options: 
   chunk_output_type: console
 ---
@@ -14,7 +17,7 @@ library(dplyr)
 ```
 ```{r Load and Prepare Data, include=TRUE}
 Age <- read.csv("Data/Raw-Data/2016_largemouth-bass_age-estimates_raw.csv") %>%
-  select(FID:Difference) %>%
+  dplyr::select(FID:Difference) %>%
   arrange(FID)
 Age$FID <- factor(Age$FID)
 length(Age$FID)
@@ -143,112 +146,6 @@ SumABC.Prec <- summary(ap.ABC, what = "precision")
   There is some dissagreement about the age of some fish (FIDs 7,27,29,34,35,63,71,90,122) and some have not been aged at all (FIDs 6,28,79,81,124). I may remove these fish when fitting the growth model.
   
   Age estimates were similar between all three readers (AgerA, AgerB, and AgerC). AgerA was found to underestimate the ages of 2 year old fish when compared to AgerC (t =`r round(SumAC.bias[2,7],2)`, p = `r round(SumAC.bias[2,8],3)`) but not when compared to AgerB (t = `r round(SumAB.bias[2,7],2)`, p = `r round(SumAB.bias[2,8],3)`). We found no other significant bias in the age estimations made by the three readers. **Fish with inconsistent age estimates** ($n = 9$) **were removed from later analysis to eliminate this bias [(or) will be assigned ages based on the majority agreement between 2 readers]**. Overall, there was a high level of precision between age estimates provided by our three readers ($n =$ `r SumABC.Prec[[2]]`, `r round(SumABC.Prec[[6]],2)` \% Agreement, ACV = `r round(SumABC.Prec[[4]],2)`).
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

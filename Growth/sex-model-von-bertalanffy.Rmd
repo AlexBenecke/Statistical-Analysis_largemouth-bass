@@ -1,11 +1,15 @@
 ---
-title: "sex-model-von-bertalanffy"
+title: "Fitting von Bertalanffy Growth Models with Fixed Sex Effects"
 author: "Alex J. Benecke"
 date: "November 30, 2017"
 output: pdf_document
+header-includes:
+    - \setlength\parindent{24pt}
+    - \usepackage{indentfirst}
 editor_options: 
   chunk_output_type: console
 ---
+### Load Required Packages and Data
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
@@ -84,7 +88,7 @@ datgr = groupedData(BI.len ~ Agei|FID, data = LMBL,
 
   I'm going to skip this for now it seems to be taking forever. I have this model output already converged, however, I did so with ML estimation instead of REML so I cannot compare with other model fits. I dont think this model should be used anyways since I'm not aware of a biological reason male and female largemouth bass would have a different $t_0$.
 
-```{ Full Sex Model, eval=FALSE}
+```{r Full Sex Model, eval=FALSE}
 sexmod.lkt <- nlme::nlme(BI.len ~ LVB(Agei, Linf, K, t0), data = datgr,
                             fixed = list(Linf ~ Sex-1, K ~ Sex-1, t0 ~ Sex-1),
                             random = Linf+K+t0 ~ 1,
@@ -102,10 +106,10 @@ save(sexmod.lkt,
      file = "model-output/sexmod.lkt.rda")
 ```
 
-```{ Load sexmod.lkt, include=FALSE}
+```{r Load sexmod.lkt, include=FALSE, eval=FALSE}
 load("model-output/sexmod.lkt.rda")
 ```
-```{ Results of sexmod.lkt, echo=FALSE}
+```{r Results of sexmod.lkt, echo=FALSE, eval=FALSE}
 print(paste("Iterations =", sexmod.lkt$numIter))
 summary(sexmod.lkt)
 intervals(sexmod.lkt)
@@ -113,14 +117,14 @@ anova(sexmod.lkt)
 plot(sexmod.lkt)
 ```
 
-### {$L_{\infty}, K} Sex Model, {sexmod.lk}
+### {$L_{\infty}$, K} Sex Model, {sexmod.lk}
 
   I'm going to skip this for now it seems to be taking forever. I have this model output already converged, however, I did so with ML estimation instead of REML so I cannot compare with other model fits.
 
-  Unfortunaltly, I do think this is the sex model that would make the most sense biologically except for maybe the $L_{\inft}$ of K sex models.
+  Unfortunaltly, I do think this is the sex model that would make the most sense biologically except for maybe the $L_{\infty}$ of K sex models.
 
 
-```{ L and K Sex Model, eval=FALSE}
+```{r L and K Sex Model, eval=FALSE, eval=FALSE}
 sexmod.lk <- nlme::nlme(BI.len ~ LVB(Agei, Linf, K, t0), data = datgr,
                             fixed = list(Linf ~ Sex-1, K ~ Sex-1, t0 ~ 1),
                             random = Linf+K+t0 ~ 1,
@@ -138,7 +142,7 @@ save(sexmod.lk,
      file = "model-output/sexmod.lk.rda")
 ```
 
-### {$L_{\infty}, $t_{0}} Sex Model, {sexmod.lt}
+### {$L_{\infty}$, $t_{0}$} Sex Model, {sexmod.lt}
 
 ```{r L and t0 Model, eval=FALSE}
 sexmod.lt <- nlme::nlme(BI.len ~ LVB(Agei, Linf, K, t0), data = datgr,
@@ -158,7 +162,7 @@ sexmod.lt <- nlme::nlme(BI.len ~ LVB(Agei, Linf, K, t0), data = datgr,
 #     file = "model-output/sexmod.lt.rda")
 ```
 
-### {K, $t_0$}, Sex Model, {sexmod.kt}
+### {K, $t_{0}$}, Sex Model, {sexmod.kt}
 
 ```{r K and t0 Sex Model, eval=FALSE}
 sexmod.kt <- nlme::nlme(BI.len ~ LVB(Agei, Linf, K, t0), data = datgr,
@@ -309,7 +313,8 @@ save(sexmod.k.int,
 
 
 ### Look at Model Fits
-```{r}
+
+```{r Load model fits}
 load("model-output/nlme.mod2.rda")
 
 #load("model-output/sexmod.lkt.rda")
@@ -345,7 +350,7 @@ coef(sexmod.l)[1,3]
 ```
 
 
-```{r}
+```{r Plot sexmod.l}
 Axes <- seq(100,450,by=50)
 Years <- seq(0,10,by=1)
 
@@ -422,7 +427,7 @@ coef(sexmod.l.int)[1,3]
 
 ### Comparing Models
 
-```{r}
+```{r model comparisons}
 AIC(nlme.mod2,sexmod.lt,sexmod.kt,sexmod.l,sexmod.k,sexmod.t,sexmod.l.int)
 BIC(nlme.mod2,sexmod.lt,sexmod.kt,sexmod.l,sexmod.k,sexmod.t,sexmod.l.int)
 anova(nlme.mod2,sexmod.lt,sexmod.kt,sexmod.l,sexmod.k,sexmod.t,sexmod.l.int)

@@ -1,8 +1,11 @@
 ---
-title: "Mortality"
+title: "Total Mortality"
 author: "Alex J. Benecke"
 date: "February 8, 2017"
 output: pdf_document
+header-includes:
+    - \setlength\parindent{24pt}
+    - \usepackage{indentfirst}
 editor_options: 
   chunk_output_type: console
 ---

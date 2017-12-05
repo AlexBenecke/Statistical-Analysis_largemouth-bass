@@ -1,5 +1,5 @@
 ---
-title: "Data Prep"
+title: "Data Preparation"
 author: "Alex J. Benecke"
 date: "June 15, 2017"
 output: pdf_document
@@ -18,7 +18,7 @@ library(magrittr)
 ```
 ```{r Load and clean Data}
 LMB <- read.csv("Data/Raw-Data/2016_largemouth-bass_raw.csv") %>%
-  select(FID,Site,AgeCap:Sex) %>%
+  dplyr::select(FID,Site,AgeCap:Sex) %>%
   arrange(FID)
 
 ### Making factors factors

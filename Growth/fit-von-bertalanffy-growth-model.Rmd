@@ -1,8 +1,11 @@
 ---
-title: "Von Bertalanffy GM No Sex Term"
+title: "Von Bertalanffy Growth Model Fitting - No Sex Term"
 author: "Alex Benecke"
 date: "July 8, 2017"
 output: pdf_document
+header-includes:
+    - \setlength\parindent{24pt}
+    - \usepackage{indentfirst}
 editor_options: 
   chunk_output_type: console
 ---
@@ -216,10 +219,10 @@ save(sexmod.lkt,
      file = "model-output/sexmod.lkt.rda")
 ```
 
-```{r Load sexmod.lkt, include=FALSE}
+```{r Load sexmod.lkt, include=FALSE, eval=FALSE}
 load("model-output/sexmod.lkt.rda")
 ```
-```{r Results of sexmod.lkt, echo=FALSE}
+```{r Results of sexmod.lkt, echo=FALSE, eval=FALSE}
 print(paste("Iterations =", sexmod.lkt$numIter))
 summary(sexmod.lkt)
 intervals(sexmod.lkt)
@@ -227,7 +230,7 @@ anova(sexmod.lkt)
 plot(sexmod.lkt)
 ```
 
-### {$L_{\infty}, K} Sex Model, {sexmod.lk}
+### {$L_{\infty}$, K} Sex Model, {sexmod.lk}
 
 ```{r L and K Sex Model, eval=FALSE}
 sexmod.lk <- nlme::nlme(BI.len ~ LVB(Agei, Linf, K, t0), data = datgr,
@@ -247,7 +250,7 @@ save(sexmod.lk,
      file = "model-output/sexmod.lk.rda")
 ```
 
-### {$L_{\infty}, $t_{0}} Sex Model, {sexmod.lt}
+### {$L_{\infty}$, $t_{0}$} Sex Model, {sexmod.lt}
 
 ```{r L and t0 Model, eval=FALSE}
 sexmod.lt <- nlme::nlme(BI.len ~ LVB(Agei, Linf, K, t0), data = datgr,
