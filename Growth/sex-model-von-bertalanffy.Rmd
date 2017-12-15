@@ -87,6 +87,8 @@ datgr = groupedData(BI.len ~ Agei|FID, data = LMBL,
 **Sex terms on all model parameters** 
 
   I'm going to skip this for now it seems to be taking forever. I have this model output already converged, however, I did so with ML estimation instead of REML so I cannot compare with other model fits. I dont think this model should be used anyways since I'm not aware of a biological reason male and female largemouth bass would have a different $t_0$.
+  
+  **Failed**
 
 ```{r Full Sex Model, eval=FALSE}
 sexmod.lkt <- nlme::nlme(BI.len ~ LVB(Agei, Linf, K, t0), data = datgr,
@@ -123,7 +125,7 @@ plot(sexmod.lkt)
 
   Unfortunaltly, I do think this is the sex model that would make the most sense biologically except for maybe the $L_{\infty}$ of K sex models.
 
-
+**Failed**
 ```{r L and K Sex Model, eval=FALSE, eval=FALSE}
 sexmod.lk <- nlme::nlme(BI.len ~ LVB(Agei, Linf, K, t0), data = datgr,
                             fixed = list(Linf ~ Sex-1, K ~ Sex-1, t0 ~ 1),
@@ -252,6 +254,7 @@ sexmod.t <- nlme::nlme(BI.len ~ LVB(Agei, Linf, K, t0), data = datgr,
   
 ### {$L_{\infty}$, K} Intercept Sex Model {sexmod.lk.int} 
 
+**Failed**
 ```{r L and K Intercept Sex Model, eval=FALSE}
 sexmod.lk.int <- nlme::nlme(BI.len ~ LVB(Agei, Linf, K, t0), data = datgr,
                             fixed = list(Linf ~ Sex, K ~ Sex, t0 ~ 1),
@@ -292,6 +295,7 @@ sexmod.l.int <- nlme::nlme(BI.len ~ LVB(Agei, Linf, K, t0), data = datgr,
 
 ### {K} Intercept Sex Model {sexmod.k.int}
 
+**Failed**
 ```{r K Intercept Sex Model, eval=FALSE}
 sexmod.k.int <- nlme::nlme(BI.len ~ LVB(Agei, Linf, K, t0), data = datgr,
                             fixed = list(Linf ~ 1, K ~ Sex, t0 ~ 1),
@@ -334,7 +338,7 @@ load("model-output/sexmod.l.int.rda")
 #load("model-output/sexmod.t.int.rda")
 ```
 
-
+### Results of {$L_{\infty}$}, Sex Model, {sexmod.l}
 
 ```{r Results of sexmod.l, echo=FALSE}
 print(paste("Iterations =", sexmod.l$numIter))
