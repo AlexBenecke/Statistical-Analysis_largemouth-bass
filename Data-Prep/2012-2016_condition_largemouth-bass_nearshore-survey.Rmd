@@ -59,7 +59,7 @@ Stock[c(275:335),c(1,3,5,14:16)]
 #write.csv(Stock,file="Data/Clean-Data/2012-2016_nearshore-survey-largemouth-bass_CLEAN.csv")
 ```
 
-  Created Clean data sile with the Wr standard weight and gabelhouse length category for stock length individuals from 20122014,2015, and 2016. The file name is 2012-2016_nearshore-survey-largemouth-bass_CLEAN.csv.
+  Created Clean data file with the relative weight (Wr), standard weight, and gabelhouse length category for stock length individuals from 20122014,2015, and 2016. The file name is 2012-2016_nearshore-survey-largemouth-bass_CLEAN.csv.
 
 ```{r Summarizing Wr Data for 2012,2014,2015,2016}
 Summarize(Wr~fyr, data=Stock, digits = 0) ### Wr Weight by Year
