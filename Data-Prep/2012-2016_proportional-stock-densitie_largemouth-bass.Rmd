@@ -44,15 +44,15 @@ psd.15 <- filter(PSD,Year==2015)
 psd.16 <- filter(PSD,Year==2016)
 ```
   
-  My plan is to make a data file with the PSD of Prefered and Quality length largemouth bass for each year. This will be used for comparison graph against Relative weight and should provide some insight into whether the population is expiriencing slow growth (perhaps due to competition for resources) or excessive mortality (perhaps due to overfishing). Both of these things can affect the proportion of large individuals and thus angler satisfaction and may be correctable with regulatory changes. 
+  My plan is to make a data file with the PSD of Preferred and Quality length largemouth bass for each year. This will be used for comparison graph against Relative weight and should provide some insight into whether the population is experiencing slow growth (perhaps due to competition for resources) or excessive mortality (perhaps due to overfishing). Both of these things can affect the proportion of large individuals and thus angler satisfaction and may be correctable with regulatory changes. 
   
   Possible conclusions about the status of the population (Guy and Brown pg 412).
   
 1) **Poor Habitat** low recruitment, slow growth, and moderate to high mortality due to poor habitat.
 
-2) **Overharvest** of largemouth bass greater than quality length (or maybe prefered).
+2) **Overharvest** of largemouth bass greater than quality length (or maybe preferred).
 
-3) **Stunting** high density of small, slow-growing largemouth bass due to excessive recruitment resulting in stunted growth due to exsesive intraspecific competition at young ages.
+3) **Stunting** high density of small, slow-growing largemouth bass due to excessive recruitment resulting in stunted growth due to excessive intraspecific competition at young ages.
   
   
   *Note I am not using data from 2012 because of differences in the data colection procedures. Only large fish were measures weighed and aged all others were just counted.*   
@@ -87,28 +87,31 @@ par(mfrow=c(1,1)) ### reset to default
 ### 2014
 hist(~Length,data=psd.14,
      breaks = seq(200,500,20),
+     ylim=c(0,30),
      main="2014",
      xlab="Total Length (mm)")
 
 ### 2015
 hist(~Length,data=psd.15,
      breaks = seq(200,500,20),
+     ylim=c(0,30),
      main="2015",
      xlab="Total Length (mm)")
 
 ### 2016
 hist(~Length,data=psd.16,
      breaks = seq(200,500,20),
+     ylim=c(0,30),
      main="2016",
      xlab="Total Length (mm)")
 ```
 
-  Based on the length frequency histograms above I would say that the largemouth bass population in lake Erie appears to be stable. The above graphs depict a even and gradual devrease in the number of individuals with length. 
+  Based on the length frequency histograms above I would say that the largemouth bass population in lake Erie appears to be stable. The above graphs depict a even and gradual decrease in the number of individuals with length. 
 
 
 #### Cumulative Frequencies
 
-  Lets look at the empiricle cumulative distribution function (ECDF). This is the proportion of fish less than each observed length. This should help me compare the length frequency distributions between years.
+  Lets look at the empirical cumulative distribution function (ECDF). This is the proportion of fish less than each observed length. This should help me compare the length frequency distributions between years.
 
 ```{r ECDF}
 par(mfrow=c(1,1)) ### reset to default
@@ -127,28 +130,35 @@ legend("bottomright", c("2014","2015","2016"), col=c("red","blue","green"),
        lty=1, bty="n", cex=0.75)
 ```
 
-  It looks to me like there are about the same length distributions each year. 2015 seems to have fewer smaller fish, however 2016 and 2014 look almost identical. This apears to support my prior assertion that the largemouth bass population in Lake Erie is stable.
+```{r Compar Length Frequency distribution}
+(diff.14.15 <- ks.test(psd.14$Length,psd.15$Length))
+(diff.15.16 <- ks.test(psd.15$Length,psd.16$Length))
+(diff.14.16 <- ks.test(psd.14$Length,psd.16$Length))
+
+```
+
+  Looks like there is a significant difference in the length frequency distribution between years 2014 and 2015 (D = 0.26962, P = 0.002754), as well as the years 2015 and 2016 (D = 0.27703, P = 0.003586). However, there does not appear to be any difference between the length frequency distribution for the years 2014 and 2016 (D = 0.10721, P = 0.4885). The difference between length frequency found between year 2015 and 2014 or 2016 may be due to differences in the sites sampled or some other source of bias.?
   
   
 ### Proportional Size Distribution (PSD)
 
 ##### Notes from Guy and Brown  9.5.2 Stock Density Indices
 
-  I will look at some size distribution indecies in order to supplement the above length frequency analysis. I can use these to test for a correlation between size structure and other factors (However I only have 3 years of data). A question I should ask is whether the index value (size structure) reflects the density and dynamics of a fish population (Willis et al. 1993). As density increases PSD tends to decrease; declines in size structure can be attributed to slowing of growth and increased mortality as resources become scarce. However, a low PSD may also occur at low population densities due to overharvest or poor habitat (Guy and Brown CH9 pg 413). 
+  I will look at some size distribution indices in order to supplement the above length frequency analysis. I can use these to test for a correlation between size structure and other factors (However I only have 3 years of data). A question I should ask is whether the index value (size structure) reflects the density and dynamics of a fish population (Willis et al. 1993). As density increases PSD tends to decrease; declines in size structure can be attributed to slowing of growth and increased mortality as resources become scarce. However, a low PSD may also occur at low population densities due to overharvest or poor habitat (Guy and Brown CH9 pg 413). 
     
-  As Growth Increases there is a tendancy for PSD to increase. Low densities may result in high growth whereas high densities may result in slow growth (Guy and Brown CH9 pg 413). 
+  As growth increases there is a tendency for PSD to increase. Low densities may result in high growth whereas high densities may result in slow growth (Guy and Brown CH9 pg 413). 
   
-  Several studies have demonstrated that body condition is positively correlated to growth rate (See chapter 10 Guy and Brown). Individuals from low-density populations in which PSD in high tend to have high body condition values, and individuals from high-density populations in which PSD is low tend to have low body condition values. However body condition is an intantaneous measure, and slow growing fish may exhibit high body conditions at times of the year when food is abundant or when gonads are mature during the spawning period (Guy and Brown CH9 pg 413). 
+  Several studies have demonstrated that body condition is positively correlated with growth rate (See chapter 10 Guy and Brown). Individuals from low-density populations in which PSD in high tend to have high body condition values, and individuals from high-density populations in which PSD is low tend to have low body condition values. However body condition is an instantaneous measure, and slow growing fish may exhibit high body conditions at times of the year when food is abundant or when gonads are mature during the spawning period (Guy and Brown CH9 pg 413). 
   
-  When total anual mortality increases there is a tendancy for PSD to decrease.High mortality due to overharvest and poor habitat also result in low PSD (Guy and Brown CH9 pg 414).
+  When total annual mortality increases there is a tendency for PSD to decrease.High mortality due to over-harvest and poor habitat also result in low PSD (Guy and Brown CH9 pg 414).
   
-  Predator and prey PSD are inversley related, however, the likliehood of this inverse relationship declines with the size of the water body. Carline et al. (1984) suggests that in Ohio impoundments, inverse relationships between size structure of largemouth bass and bluegill may not be expected in impoundments greater than 15 ha in size (Guy and Brown CH9 pg 414).
+  Predator and prey PSD are inversely related, however, the likelihood of this inverse relationship declines with the size of the water body. Carline et al. (1984) suggests that in Ohio impoundments, inverse relationships between size structure of largemouth bass and bluegill may not be expected in impoundments greater than 15 ha in size (Guy and Brown CH9 pg 414).
   
   *Note I may want to repete these analysis using CPUE instead of individuals*
   
 ##### Lets get started with PSD  
 
-  Lets get started calculating Proportional Size Distributions (PSD). I mentioned earlier using the Prefered and Quality lengths, however, I think I will also look at the relative PSD of 457 mm fish prefered by anglers. This may not work though since I think these individuals are rare in my sample and perhaps absent in some years.
+  Lets get started calculating Proportional Size Distributions (PSD). I mentioned earlier using the Preferred and Quality lengths, however, I think I will also look at the relative PSD of 457 mm fish preferred by anglers. This may not work though since I think these individuals are rare in my sample and perhaps absent in some years.
 
   Lets start by looking at the frequency of fish in each gabelhouse length category.
 
@@ -157,6 +167,7 @@ legend("bottomright", c("2014","2015","2016"), col=c("red","blue","green"),
 (gfreq.14 <- xtabs(~gcat,data=psd.14))
 ### Convert freq to percentage
 (psdXY1.14 <- prop.table(gfreq.14)*100)
+(psdXY1.14.percent <- prop.table(gfreq.14)*100)
 
 ### 2015
 (gfreq.15 <- xtabs(~gcat,data=psd.15))
@@ -167,6 +178,10 @@ legend("bottomright", c("2014","2015","2016"), col=c("red","blue","green"),
 (gfreq.16 <- xtabs(~gcat,data=psd.16))
 ### Convert freq to percentage
 (psdXY1.16 <- prop.table(gfreq.16)*100)
+
+### I removed the *100 for calculation of psdXY1.YY b/c of Error 
+ ## given when compution CI about psdXY1.YY not being a table of proportions
+### I'll have to create a now prop table if I wat to see percent.
 ```
 
   *Note I may want to compare incrimental PSD indices between years to look for changes in fish between Quality and Prefered length or prefered and Relative length of 457mm. I should research what the advantages of incrimental PSD inices are in greater detail first.*
@@ -250,13 +265,13 @@ Lets try the other way of calculating CI for PSD.
 
 ### 2014
  ## Traditional
-psdCalc(~Length,data=psd.14,species = "Largemouth Bass",what="traditional")
+psdCI.14 <- psdCalc(~Length,data=psd.14,species = "Largemouth Bass",what="traditional")
  ## Incremental
 psdCalc(~Length,data=psd.14,species = "Largemouth Bass",what="incremental")
 
 ### 2015
  ## Traditional
-psdCalc(~Length,data=psd.15,species = "Largemouth Bass",what="traditional")
+(psdCI.15 <- psdCalc(~Length,data=psd.15,species = "Largemouth Bass",what="traditional"))
  ## Incremental
 psdCalc(~Length,data=psd.15,species = "Largemouth Bass",what="incremental")
 
@@ -265,5 +280,15 @@ psdCalc(~Length,data=psd.15,species = "Largemouth Bass",what="incremental")
 psdCalc(~Length,data=psd.16,species = "Largemouth Bass",what="traditional")
  ## Incremental
 psdCalc(~Length,data=psd.16,species = "Largemouth Bass",what="incremental")
+```
+
+### Compare PSD between Years
+See Introductory Fisheries Analysis with R 6.4 pg 122
+
+
+
+
+```{r}
+
 ```
 

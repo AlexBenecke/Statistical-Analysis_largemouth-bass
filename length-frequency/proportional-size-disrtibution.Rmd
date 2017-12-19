@@ -1,0 +1,72 @@
+---
+title: "Proportional Size Distribution (PSD)"
+author: "Alex J. Benecke"
+date: "December 19, 2017"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+
+  I will use a Chi-Square test to see if there is a difference between PSD between years.
+
+```{r load required packages}
+library(FSA)
+library(magrittr)
+library(dplyr)
+library(plotrix)
+library(Matching)
+```
+
+
+```{r Load Data}
+lmbs <- read.csv("Data/Clean-Data/2012-2016_nearshore-survey-largemouth-bass_Stock_CLEAN.csv") %>%
+  filter(Year>=2013) %>%
+  arrange(Year,FID,Length)
+lmbs$fyr <- as.factor(lmbs$fyr)
+
+str(lmbs)
+headtail(lmbs)
+unique(lmbs$Year) ### See that there is no 2013
+```
+
+```{r Create a Table of Fish in each gcat by Year}
+(lmbs.LF <- xtabs(~Year+gcat,data=lmbs))
+```
+
+
+```{r Chi-Square test}
+chisq.test(lmbs.LF)
+```
+
+  This seems to suggest that the distribution of fish into the length intervals is different between years ($X^{2}$ = 16.694, df = 6, P = 0.01048).
+  
+  Lets try and find where the differences may be.
+  
+```{r percent of fish in each gcat by year}
+round(prop.table(lmbs.LF,margin=1)*100,0)
+```
+
+  Remarkably the percent of quality fish is the same for 2014 and 2016 and a bit higher for 2015. the percentage of fish in each gcat is similar between years 2013, 2014, and 2016, However the year 2015 appears to have a higher percentage of large fish and far fewer small fish. 
+  
+  Could this be some sort of sampling bias?
+  
+  Could this be a result of sampling different sites? where the 2015 sites more suitable for LMB?
+  
+  Are the years really different or do I just have too few to say for sure?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

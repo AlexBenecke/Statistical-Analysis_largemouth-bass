@@ -1,0 +1,99 @@
+---
+title: "Create Data Frame with Relative Weight and Gabelhouse Length Categories"
+author: "Alex J. Benecke"
+date: "December 19, 2017"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+
+  Here I need to make two data files. Both need to cantain fish caught in the years 2012-2016 (even though I will only be using years 2014-2016). Both will contain the Relative Weight (Wr) of each fish and the gabel house length category each fish fits into. Then I will create two CLEAN data files one of wich will contain only fish larger than stock length and another with all fish of any length.
+  The data file with fish of all lengths will be used to compare the length frequency distribution between years. The data frame with only gish stock length and larger will be used to compare the proportional size densities between years and with the relative weight between years.
+
+```{r setup and load packages, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(FSA)
+library(car) ## befor dplyr reduce conflicts with MASS
+library(dplyr)
+library(plotrix)
+library(multcomp)
+library(tidyverse)
+library(magrittr)
+library(Matching)
+```
+
+
+```{r load data}
+Cond <- read.csv("./Data/Raw-Data/2012-2016_nearshore-survey_largemouth-bass.csv") %>%
+  mutate(logW=log10(Weight),logL=log10(Length))
+Cond$fyr <- factor(Cond$Year)
+
+str(Cond)
+headtail(Cond)
+unique(Cond$Year)
+```
+```{r Getting Standard Weight values from literature (FSA Package)}
+(wsLMB <- wsVal("Largemouth Bass", simplify = TRUE))
+(wsLMB_min <- wsLMB[["min.TL"]])
+(wsLMB_int <- wsLMB[["int"]])
+(wsLMB_slp <- wsLMB[["slope"]])
+```
+
+
+```{r Calculating Standard and Relative Weight}
+Cond %<>% mutate(Ws = 10^(wsLMB_int+wsLMB_slp*logL),
+                 Wr=(Weight/Ws)*100)
+headtail(Cond[,c(1,3,14,15)])
+headtail(Cond[Cond$Year==2013,]) ### No Wr for 2013
+```
+
+### Creating data file with all size fish
+
+```{r}
+### creating size breaks for Gabelhouse Length categories for Largemouth Bass
+(lmb.cuts2 <- psdVal("Largemouth Bass"))
+
+### adding gcat variable to data frame
+lmb <- Cond %>%
+  mutate(gcat=lencat(Length, breaks = lmb.cuts2,
+                     use.names = TRUE, drop.levels = TRUE))  ### create Gabelhouse Length Categories
+
+  
+headtail(lmb[,c(1,3,5,14:16)])
+lmb[c(275:335),c(1,3,5,14:16)]
+#write.csv(lmb,file="Data/Clean-Data/2012-2016_nearshore-survey-largemouth-bass_CLEAN.csv") 
+```
+
+
+### Creating Data File with Only Stock and Larger Fish
+
+```{r Seperating out only Stock Length individuals and removing NA}
+### adding gcat variable to data frame
+Stock <- Cond %>%
+  filter(Length>=lmb.cuts2["stock"]) %>%
+  mutate(gcat=lencat(Length, breaks = lmb.cuts2,
+                     use.names = TRUE, drop.levels = TRUE))   ### create Gabelhouse Length Categories
+
+  
+headtail(Stock[,c(1,3,5,14:16)])
+Stock[c(275:335),c(1,3,5,14:16)]
+#write.csv(Stock,file="Data/Clean-Data/2012-2016_nearshore-survey-largemouth-bass_Stock_CLEAN.csv")
+```
+
+
+### Creating a Data File to Summarize Relative Weight by Year
+
+
+```{r Summarizing Wr Data for 2012,2014,2015,2016}
+Stock %<>% filterD(!is.na(Wr))
+
+Summarize(Wr~fyr, data=Stock, digits = 0) ### Wr Weight by Year
+
+(Wr_fyr.gcat <- Summarize(Wr~fyr*gcat, data=Stock))
+str(Wr_fyr.gcat)
+
+#write.csv(Wr_fyr.gcat,file = "Data/Clean-Data/relative-weight.csv")
+```
+
+  I have created a file with the relative weight of each gabelhouse length category for each year. The file name is relative-weight.csv.
+
