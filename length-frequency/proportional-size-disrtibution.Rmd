@@ -3,13 +3,18 @@ title: "Proportional Size Distribution (PSD)"
 author: "Alex J. Benecke"
 date: "December 19, 2017"
 output: pdf_document
+header-includes:
+    - \setlength\parindent{24pt}
+    - \usepackage{indentfirst}
 editor_options: 
   chunk_output_type: console
 ---
 
-  I will use a Chi-Square test to see if there is a difference between PSD between years.
+  I will use a Chi-Square test to see if there is a difference between PSD between years (2013 - 2016).
 
-```{r load required packages}
+### Data Preparation
+
+```{r load required packages, include=FALSE}
 library(FSA)
 library(magrittr)
 library(dplyr)
@@ -17,8 +22,8 @@ library(plotrix)
 library(Matching)
 ```
 
-
-```{r Load Data}
+#### Load Data
+```{r Load Data, tidy=TRUE}
 lmbs <- read.csv("Data/Clean-Data/2012-2016_nearshore-survey-largemouth-bass_Stock_CLEAN.csv") %>%
   filter(Year>=2013) %>%
   arrange(Year,FID,Length)
@@ -26,39 +31,116 @@ lmbs$fyr <- as.factor(lmbs$fyr)
 
 str(lmbs)
 headtail(lmbs)
-unique(lmbs$Year) ### See that there is no 2013
+unique(lmbs$Year) ### See that there is no 2012
 ```
 
+### View Data
 ```{r Create a Table of Fish in each gcat by Year}
 (lmbs.LF <- xtabs(~Year+gcat,data=lmbs))
 ```
 
-
+### Chi-Squares Test
+ 
+ **Is there a difference in the number of fish in each gabelhouse categorie during the years 2013 - 2016?**
+ 
 ```{r Chi-Square test}
 chisq.test(lmbs.LF)
 ```
 
-  This seems to suggest that the distribution of fish into the length intervals is different between years ($X^{2}$ = 16.694, df = 6, P = 0.01048).
+  This seems to suggest that the proportional stock distribution (PSD) is different for largemouth bass between years ($X^{2}$ = 16.694, df = 6, P = 0.01048).
   
-  Lets try and find where the differences may be.
+  
+  **In which years is PSD different?**
   
 ```{r percent of fish in each gcat by year}
 round(prop.table(lmbs.LF,margin=1)*100,0)
 ```
 
-  Remarkably the percent of quality fish is the same for 2014 and 2016 and a bit higher for 2015. the percentage of fish in each gcat is similar between years 2013, 2014, and 2016, However the year 2015 appears to have a higher percentage of large fish and far fewer small fish. 
+  Remarkably the percent of quality fish is the same for 2014 and 2016 and a bit higher for 2015. the percentage of fish in each gcat is similar between years 2013, 2014, and 2016, However, the year 2015 appears to have a higher percentage of large fish and far fewer small fish. 
+
+
+1) Could this be some sort of sampling bias?
+
+2) Could this be a result of sampling different sites? where the 2015 sites more suitable for LMB?
   
-  Could this be some sort of sampling bias?
+3) Are the years really different or do I just have too few to say for sure?
+
+
+### Compare PSD-Q between years 2013 - 2016
+
+```{r Create new gcatQ variable Grouping Q- and Q+}
+lmbs %<>% mutate(gcatQ=mapvalues(gcat,
+                                 from=c("stock","quality","preferred"),
+                                 to=c("quality-", "quality+", "quality+")),
+                 gcatQ=droplevels(gcatQ))
+
+(lmb.LFQ <- xtabs(~Year+gcatQ,data = lmbs))
+
+chisq.test(lmb.LFQ)
+```
+
+```{r Adjusted p-values PSD-Q, results='hide'}
+
+(ps.Q <- c(chisq.test(lmb.LFQ[1:2,])$p.value,    ### 2013-2014
+           chisq.test(lmb.LFQ[c(1,3),])$p.value, ### 2013-2015
+           chisq.test(lmb.LFQ[c(1,4),])$p.value, ### 2013-2016
+           chisq.test(lmb.LFQ[2:3,])$p.value,    ### 2014-2015
+           chisq.test(lmb.LFQ[c(2,4),])$p.value, ### 2014-2016
+           chisq.test(lmb.LFQ[3:4,])$p.value))   ### 2015-2016
+
+(p.val.Q <- p.adjust(ps.Q))
+
+```
+
+```{r Summarizing Adjusted p-values by year for PSD-Q, echo=FALSE}
+(yrs <- c("13-14","13-15","13-16","14-15","14-16","15-16"))
+
+
+Chisq.PSD_Q.yr <- data.frame(yrs,round(ps.Q,4),round(p.val.Q,4))
+
+names(Chisq.PSD_Q.yr) <- c("Year", "p-value", "Adjusted p")
+Chisq.PSD_Q.yr
+```
+
+  The PSD-Q of largemouth bass is different for at least one of the years during 2013 - 2016 (Chi-Squared, $X^{2}$ = 15.3, p = 0.0016). The adjusted p-values show a difference in PSD-Q between years 2013 - 2015 (p = 0.0337), 2014 - 2015 (p = 0.0036), and 2015 - 2016 (p = 0.0027).
   
-  Could this be a result of sampling different sites? where the 2015 sites more suitable for LMB?
-  
-  Are the years really different or do I just have too few to say for sure?
+
+### Compare PSD-P between years 2013 - 2016
+
+```{r Create new gcatP variable Grouping P- and P+}
+lmbs %<>% mutate(gcatP=mapvalues(gcat,
+                                 from=c("stock","quality","preferred"),
+                                 to=c("preferred-", "preferred-", "preferred+")),
+                 gcatP=droplevels(gcatP))
+
+(lmb.LFP <- xtabs(~Year+gcatP,data = lmbs))
+
+chisq.test(lmb.LFP)
+```
+
+```{r Adjusted p-values PSD-P, results='hide'}
+
+(ps.P <- c(chisq.test(lmb.LFP[1:2,])$p.value,    ### 2013-2014
+           chisq.test(lmb.LFP[c(1,3),])$p.value, ### 2013-2015
+           chisq.test(lmb.LFP[c(1,4),])$p.value, ### 2013-2016
+           chisq.test(lmb.LFP[2:3,])$p.value,    ### 2014-2015
+           chisq.test(lmb.LFP[c(2,4),])$p.value, ### 2014-2016
+           chisq.test(lmb.LFP[3:4,])$p.value))   ### 2015-2016
+
+(p.val.P <- p.adjust(ps.P))
+```
+
+```{r Summarizing Adjusted p-values by year for PSD-P, echo=FALSE}
+(yrs <- c("13-14","13-15","13-16","14-15","14-16","15-16"))
 
 
+Chisq.PSD_P.yr <- data.frame(yrs, round(ps.P,4),round (p.val.P,4))
+names(Chisq.PSD_P.yr) <- c("Year", "p-value", "Adjusted p")
+Chisq.PSD_P.yr
+```
 
 
-
-
+  The PSD-P of largemouth bass is not different for any years during 2013 - 2016 (Chi-Squared, $X^{2}$ = 5.45, p = 0.1418). The adjusted p-values show no difference in the PSD-P between years (2013 - 2016). The adjusted p-value between years 2015 - 2016 is the closest to being different (p = 0.3).
 
 
 

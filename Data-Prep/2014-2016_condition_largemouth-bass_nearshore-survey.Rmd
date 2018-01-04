@@ -1,0 +1,137 @@
+---
+title: "Condition of Lake Erie Largemouth Bass Sampled in the ODOW Nearshore Community Survey 2014-2016"
+author: "Alex Benecke"
+date: "January 4, 2018"
+output: pdf_document
+header-includes:
+    - \setlength\parindent{24pt}
+    - \usepackage{indentfirst}
+editor_options: 
+  chunk_output_type: console
+---
+
+### Data Prep
+
+```{r setup and load packages, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(FSA)
+library(car) ## befor dplyr reduce conflicts with MASS
+library(dplyr)
+library(plotrix)
+library(multcomp)
+library(tidyverse)
+library(magrittr)
+library(Matching)
+```
+
+**I think I want to load in relative-weight_largemouth-bass_RAW.csv instead**
+```{r Load Data, results='hide'}
+Stock <- read.csv("Data/Clean-Data/2012-2016_nearshore-survey-largemouth-bass_Stock_CLEAN.csv") %>% 
+  filter(fyr>=2014) %>%
+  arrange(Year,gcat)
+
+Stock$fyr <- as.factor(Stock$fyr)
+
+headtail(Stock)
+```
+```{r View Data, tidy=TRUE}
+str(Stock)
+unique(Stock$fyr)
+```
+
+  **Note**
+  
+  *I removed the years 2012 and 2013. 2012 because only large fish have weight length data and more and differenct sites were samples. 2013 lacks weight data due to the loss of unifying ID variable and weight and lengths being seperated on different tabs.*
+  
+
+### Summarize Relative Weight by Year
+
+```{r Summarizing Wr Data for 2012,2014,2015,2016}
+(Wr.Stock <- Summarize(Wr~fyr,data = Stock) %>%
+  arrange(fyr))
+
+```
+
+  I have created a file with the relative weight of each gabelhouse length category for each year. The file name is relative-weight_largemouth-bass_STOCK.csv.
+
+
+**Note**
+
+  *The relative weight data contains only stock length individuals. This is so that I can easily compare the relative weight of fish with PSD. This is done despite the min TL being 150 mm. I may want to summarize relative weight for 150mm and greater length individuals in the future to see if young/small fish drive down or increase Wr.*
+
+
+Lets start exploring the relative weight data. I have two questions I would like to know the answer to.
+
+1) does Wr differ among years?
+
+2) does Wr differ among gabelhouse length categories?
+
+
+  *First* Lets see if Wr is different between years. 
+
+
+
+
+```{r Anova Wr Year}
+aov1 <- lm(Wr~fyr,data=Stock)
+Anova(aov1)
+
+mc1 <- glht(aov1,mcp(fyr="Tukey"))
+summary(mc1)
+```
+
+  Looks like Wr is different between years ($F_{2, 311}$ = 5.04, p = 0.007). There is no difference in relative weight between 2015 and 2014 (t = 0.1, p = 0.99). However, relative weight is significantly different between 2016 and 2014 (t = 2.98, p = 0.009), and 2016 and 2015 (t = 2.36, p = 0.049).
+
+
+### constructing a plot of Wr and Year
+
+```{r Create Results to be plotted}
+grps <- c("2014", "2015", "2016")
+nd <- data.frame(fyr=factor(grps,levels = grps))
+(pred <- predict(aov1,nd,interval = "confidence"))
+
+```
+
+```{r Plot Wr by Year}
+plotCI(as.numeric(nd$fyr), pred[,"fit"],
+       li = pred[,"lwr"], ui = pred[,"upr"],
+       pch=19, xaxt = "n", 
+       xlim = c(0.8, 3.35), ylim = c(100,120),
+       xlab = "Year", ylab = "Mean Wr")
+
+lines(nd$fyr, pred[,"fit"],col="gray50")
+
+axis(1,at=nd$fyr, labels = nd$fyr)
+
+cld(mc1)
+
+text(x=nd$fyr, y=pred[,"upr"], labels = c("a", "a", "b"), pos=3)
+```
+
+
+```{r}
+residPlot(aov1)
+leveneTest(aov1)
+```
+
+  Variance are equal and the homoscedasticity assumption is likley met (Levene's Test, $F_{2, 311}$ = 1.75, p = 0.18).
+
+
+```{r real quick make Wr.csv from pred}
+Year <- c("2014", "2015", "2016")
+pred <- data.frame(Year,pred)
+names(pred) <- c("Year", "Wr", "LCI", "UCI")
+str(pred)
+head(pred)
+#1-4-18#write.csv(pred,file = "Data/Clean-Data/relative-weight_largemouth-bass_STOCK.csv")
+```
+
+
+I will look into the difference in Wr between gcat at a later date. I don't think this matters so much as of now.
+
+
+```{r}
+Wr.14 <- filterD(Stock,Year==2014)
+Wr.15 <- filterD(Stock,Year==2015)
+Wr.16 <- filterD(Stock,Year==2016)
+```

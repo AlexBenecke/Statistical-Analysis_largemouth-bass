@@ -20,31 +20,34 @@ library(plotrix)
 library(Matching)
 ```
 
-```{r Load Data}
-PSD <- read.csv("Data/Clean-Data/2012-2016_nearshore-survey-largemouth-bass_CLEAN.csv") %>%
+### Data Preparation
+
+```{r Load Data, tidy=TRUE, echo=TRUE}
+PSD <- read.csv("Data/Clean-Data/2012-2016_nearshore-survey-largemouth-bass_Stock_CLEAN.csv")  %>%
+  filter(Year>=2013) %>%
   arrange(Year,FID,Length)
 PSD$fyr <- as.factor(PSD$fyr)
 
 str(PSD)
-headtail(PSD)
-unique(PSD$Year) ### See that there is no 2013
+#headtail(PSD)
+unique(PSD$Year) ### See that there is no year 2012
 ```
 
-```{r Create length bins}
+```{r Create length bins, tidy=TRUE, results='hide'}
 PSD %<>% mutate(lcat20=lencat(Length,w=20)); headtail(PSD)
 ### just looking at data
 PSD[c(300:335),c(1,3,5,16,17)]
 ```
 
-```{r Seperate out years}
-psd.12 <- filter(PSD,Year==2012)
-psd.13 <- NA
+```{r Seperate out years, tidy=TRUE}
+psd.13 <- filter(PSD,Year==2013)
 psd.14 <- filter(PSD,Year==2014)
 psd.15 <- filter(PSD,Year==2015)
 psd.16 <- filter(PSD,Year==2016)
 ```
+\newpage
   
-  My plan is to make a data file with the PSD of Preferred and Quality length largemouth bass for each year. This will be used for comparison graph against Relative weight and should provide some insight into whether the population is experiencing slow growth (perhaps due to competition for resources) or excessive mortality (perhaps due to overfishing). Both of these things can affect the proportion of large individuals and thus angler satisfaction and may be correctable with regulatory changes. 
+  My plan is to make a data file with the PSD of Preferred and Quality length largemouth bass for each year (2013 - 2014). This will be used for comparison graph against Relative weight and should provide some insight into whether the population is experiencing slow growth (perhaps due to competition for resources) or excessive mortality (perhaps due to overfishing). Both of these things can affect the proportion of large individuals and thus angler satisfaction and may be correctable with regulatory changes. 
   
   Possible conclusions about the status of the population (Guy and Brown pg 412).
   
@@ -57,11 +60,85 @@ psd.16 <- filter(PSD,Year==2016)
   
   *Note I am not using data from 2012 because of differences in the data colection procedures. Only large fish were measures weighed and aged all others were just counted.*   
 
-  *Note data from 2013 has been removed because I do not have a single data file with lengths and weights together. Although I do have these variables seperatly without any individual identifyer.*
+  *Note data from 2013 does not have and weight associated with it (Due to the lack of an individual identification variable and the seperation of length and weight on two tabs in the excell sheet). so 2013 will not be used for the graph of Wr and PSD.*
+
+### Calculate PSD-X and 95% CI 2013 - 2016 
+
+```{r Calculate PSD-X and CI for each Year 2013 - 2016, tidy=TRUE}
+### 2013
+(PSD_CI_13 <- psdCalc(~Length, data=psd.13,
+        species = "Largemouth Bass",
+        what = "traditional"))
+
+### 2014
+(PSD_CI_14 <- psdCalc(~Length, data=psd.14,
+        species = "Largemouth Bass",
+        what = "traditional"))
+
+### 2015
+(PSD_CI_15 <- psdCalc(~Length, data=psd.15,
+        species = "Largemouth Bass",
+        what = "traditional"))
+
+### 2016
+(PSD_CI_16 <- psdCalc(~Length, data=psd.16,
+        species = "Largemouth Bass",
+        what = "traditional"))
+```
+
+**Notice**
+
+*Warning message: Some category sample size <20, some CI coverage may be lower than 95%.* 
+
+### Create Data Frame containing PSD-X and 95% CI for all years 2013 - 2016
+
+```{r Create Data Frame with PSD-Q and CI for 2013 - 2016,}
+(psd.Q <- rbind(PSD_CI_13["PSD-Q",],
+                PSD_CI_16["PSD-Q",],
+                PSD_CI_15["PSD-Q",],
+                PSD_CI_16["PSD-Q",]))
+Years <- c( "2013", "2014", "2015", "2016")
+
+PSD.Q <- data.frame(Years,psd.Q)
+names(PSD.Q) <- c("Years", "PSD-Q", "LCI", "UCI")
+PSD.Q
+#1-4-18#write.csv(PSD.Q, file="Data/Clean-Data/PSD-Q.csv")
+```
+
+```{r Create Data Frame with PSD-P and CI for 2013 - 2016,}
+(psd.P <- rbind(PSD_CI_13["PSD-P",],
+                PSD_CI_16["PSD-P",],
+                PSD_CI_15["PSD-P",],
+                PSD_CI_16["PSD-P",]))
+Years <- c( "2013", "2014", "2015", "2016")
+
+PSD.P <- data.frame(Years,psd.P)
+names(PSD.P) <- c("Years", "PSD-P", "LCI", "UCI")
+PSD.P
+
+#1-4-18#write.csv(PSD.P, file="Data/Clean-Data/PSD-P.csv")
+```
+
+  New .csv saved in Clean-Data.
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+# Below Everything is Redundant
+
+  **I created new .rmd files to seperate the steps of the analysis below in order to make everything a bit more clear and to make it easier to see where and how I performed each step. I will preserve the code below, for now, just in case the notes I've put with it are of use to me at a later time.** (1-4-2018) 
 
 ### Length Frequency
 
 ```{r length frequency table}
+### 2013
+(psd.13.freq20 <- xtabs(~lcat20,data=psd.13))
+### calculate the percentage of the fish in each length nin
+prop.table(psd.13.freq20)*100
+
 ### 2014
 (psd.14.freq20 <- xtabs(~lcat20,data=psd.14))
 ### calculate the percentage of the fish in each length nin
@@ -81,8 +158,15 @@ prop.table(psd.16.freq20)*100
 Lets view a quick histogram of the frequency of fish in each length bin.
 
 ```{r Hist of length freq}
-par(mfrow=c(3,1)) ### arrange graphs 1 column 3 rows
+par(mfrow=c(4,1)) ### arrange graphs 1 column 4 rows
 par(mfrow=c(1,1)) ### reset to default
+
+### 2013
+hist(~Length,data=psd.13,
+     breaks = seq(200,500,20),
+     ylim=c(0,30),
+     main="2014",
+     xlab="Total Length (mm)")
 
 ### 2014
 hist(~Length,data=psd.14,
@@ -130,7 +214,14 @@ legend("bottomright", c("2014","2015","2016"), col=c("red","blue","green"),
        lty=1, bty="n", cex=0.75)
 ```
 
-```{r Compar Length Frequency distribution}
+```{r Compare Length Frequency distribution}
+(ks.ps <- c(ks.test(psd.14$Length,psd.15$Length)$p.value,
+            ks.test(psd.15$Length,psd.16$Length)$p.value,
+            ks.test(psd.14$Length,psd.16$Length)$p.value))
+(p.adjust(ks.ps))
+
+
+
 (diff.14.15 <- ks.test(psd.14$Length,psd.15$Length))
 (diff.15.16 <- ks.test(psd.15$Length,psd.16$Length))
 (diff.14.16 <- ks.test(psd.14$Length,psd.16$Length))
