@@ -9,18 +9,28 @@ header-includes:
 editor_options: 
   chunk_output_type: console
 ---
-```{r , include=FALSE}
+```{r Load Packages, include=FALSE}
 library(FSA)
 library(tidyverse)
 library(stringr)
 library(magrittr)
 
 ```
-```{r Load and clean Data}
+```{r Load Data}
 LMB <- read.csv("Data/Raw-Data/2016_largemouth-bass_raw.csv") %>%
   dplyr::select(FID,Site,AgeCap:Sex) %>%
   arrange(FID)
-
+```
+```{r Quick Descriptive Stats}
+str(LMB) ### n = 132
+tmp <- LMB %>% filter(!is.na(AgeCap))
+length(tmp$AgeCap) ### Aged fish = 127, not aged = 5
+mean(tmp$AgeCap)
+median(tmp$AgeCap)
+range(tmp$AgeCap)
+table(tmp$Sex)
+```
+```{r Clean Data}
 ### Making factors factors
 LMB$FID <- factor(LMB$FID)
 LMB$Site <- factor(LMB$Site)
@@ -60,7 +70,7 @@ LMBL %<>% mutate(Agei=as.numeric(Agei)) %>%
 ```{r Back-Calculation, tidy=TRUE}
 LMBL$BI.len <- with(LMBL,LenCap+(Radi-RadCap)*(LenCap-3.9)*(RadCap-0.035)^-1)
 ```
-```{r, eval=FALSE}
+```{r Create csv File Long Format, eval=FALSE}
 #write.csv(LMBL,"Data/Clean-Data/2016_largemouth-bass_long-format.csv")
 ```
 

@@ -24,7 +24,6 @@ library(magrittr)
 library(Matching)
 ```
 
-**I think I want to load in relative-weight_largemouth-bass_RAW.csv instead**
 ```{r Load Data, results='hide'}
 Stock <- read.csv("Data/Clean-Data/2012-2016_nearshore-survey-largemouth-bass_Stock_CLEAN.csv") %>% 
   filter(fyr>=2014) %>%
@@ -43,13 +42,13 @@ unique(Stock$fyr)
   
   *I removed the years 2012 and 2013. 2012 because only large fish have weight length data and more and differenct sites were samples. 2013 lacks weight data due to the loss of unifying ID variable and weight and lengths being seperated on different tabs.*
   
+\newpage
 
 ### Summarize Relative Weight by Year
 
-```{r Summarizing Wr Data for 2012,2014,2015,2016}
+```{r Summarizing Wr Data for 2012,2014,2015,2016, tidy=TRUE}
 (Wr.Stock <- Summarize(Wr~fyr,data = Stock) %>%
   arrange(fyr))
-
 ```
 
   I have created a file with the relative weight of each gabelhouse length category for each year. The file name is relative-weight_largemouth-bass_STOCK.csv.
@@ -67,12 +66,9 @@ Lets start exploring the relative weight data. I have two questions I would like
 2) does Wr differ among gabelhouse length categories?
 
 
-  *First* Lets see if Wr is different between years. 
+**First** Lets see if Wr is different between years. 
 
-
-
-
-```{r Anova Wr Year}
+```{r Anova Wr Year, tidy=TRUE}
 aov1 <- lm(Wr~fyr,data=Stock)
 Anova(aov1)
 
@@ -80,19 +76,20 @@ mc1 <- glht(aov1,mcp(fyr="Tukey"))
 summary(mc1)
 ```
 
-  Looks like Wr is different between years ($F_{2, 311}$ = 5.04, p = 0.007). There is no difference in relative weight between 2015 and 2014 (t = 0.1, p = 0.99). However, relative weight is significantly different between 2016 and 2014 (t = 2.98, p = 0.009), and 2016 and 2015 (t = 2.36, p = 0.049).
+
+  Looks like Wr is different between years (One-Way ANOVA, $F_{2, 311}$ = 5.04, p = 0.007). There is no difference in relative weight between 2015 and 2014 (Tukey HSD, t = 0.1, p = 0.99). However, relative weight is significantly different between 2016 and 2014 (Tukey HSD, t = 2.98, p = 0.009), and 2016 and 2015 (Tukey HSD, t = 2.36, p = 0.049).
 
 
 ### constructing a plot of Wr and Year
 
-```{r Create Results to be plotted}
+```{r Create Results to be plotted, tidy=TRUE}
 grps <- c("2014", "2015", "2016")
 nd <- data.frame(fyr=factor(grps,levels = grps))
 (pred <- predict(aov1,nd,interval = "confidence"))
 
 ```
 
-```{r Plot Wr by Year}
+```{r Plot Wr by Year, tidy=TRUE}
 plotCI(as.numeric(nd$fyr), pred[,"fit"],
        li = pred[,"lwr"], ui = pred[,"upr"],
        pch=19, xaxt = "n", 
@@ -109,15 +106,16 @@ text(x=nd$fyr, y=pred[,"upr"], labels = c("a", "a", "b"), pos=3)
 ```
 
 
-```{r}
+```{r Testing Assumptions, tidy=TRUE}
 residPlot(aov1)
 leveneTest(aov1)
 ```
 
+
   Variance are equal and the homoscedasticity assumption is likley met (Levene's Test, $F_{2, 311}$ = 1.75, p = 0.18).
 
 
-```{r real quick make Wr.csv from pred}
+```{r real quick make Wr.csv from pred, tidy=TRUE}
 Year <- c("2014", "2015", "2016")
 pred <- data.frame(Year,pred)
 names(pred) <- c("Year", "Wr", "LCI", "UCI")
@@ -126,11 +124,12 @@ head(pred)
 #1-4-18#write.csv(pred,file = "Data/Clean-Data/relative-weight_largemouth-bass_STOCK.csv")
 ```
 
+### To Be Continued...
 
-I will look into the difference in Wr between gcat at a later date. I don't think this matters so much as of now.
+  I will look into the difference in Wr between gcat at a later date. I don't think this matters so much as of now.
 
 
-```{r}
+```{r, tidy=TRUE}
 Wr.14 <- filterD(Stock,Year==2014)
 Wr.15 <- filterD(Stock,Year==2015)
 Wr.16 <- filterD(Stock,Year==2016)

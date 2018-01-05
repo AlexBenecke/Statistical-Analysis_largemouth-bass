@@ -3,11 +3,16 @@ title: "Create Data Frame with Relative Weight and Gabelhouse Length Categories"
 author: "Alex J. Benecke"
 date: "December 19, 2017"
 output: pdf_document
+header-includes:
+    - \setlength\parindent{24pt}
+    - \usepackage{indentfirst}
 editor_options: 
   chunk_output_type: console
 ---
 
   Here I need to make two data files. Both need to cantain fish caught in the years 2012-2016 (even though I will only be using years 2014-2016). Both will contain the Relative Weight (Wr) of each fish and the gabel house length category each fish fits into. Then I will create two CLEAN data files one of wich will contain only fish larger than stock length and another with all fish of any length.
+  
+  
   The data file with fish of all lengths will be used to compare the length frequency distribution between years. The data frame with only gish stock length and larger will be used to compare the proportional size densities between years and with the relative weight between years.
 
 ```{r setup and load packages, include=FALSE}
@@ -32,6 +37,54 @@ str(Cond)
 headtail(Cond)
 unique(Cond$Year)
 ```
+
+```{r Data Exploration Quick Discription, include=FALSE}
+### 2013
+tmp.13 <- filterD(Cond,Year==2013)
+str(tmp.13)
+unique(tmp.13$Year)
+unique(tmp.13$Site);length(unique(tmp.13$Site)) ### Sites; Number of Sites
+nrow(tmp.13) ### n Fish
+mean(tmp.13$Length)
+
+### 2014
+tmp.14 <- filterD(Cond,Year==2014)
+str(tmp.14)
+unique(tmp.14$Year)
+unique(tmp.14$Site);length(unique(tmp.14$Site)) ### Sites; Number of Sites
+nrow(tmp.14) ### n Fish
+mean(tmp.14$Length)
+
+
+### 2015
+tmp.15 <- filterD(Cond,Year==2015)
+str(tmp.15)
+unique(tmp.15$Year)
+unique(tmp.15$Site);length(unique(tmp.15$Site)) ### Sites; Number of Sites
+nrow(tmp.15) ### n Fish
+mean(tmp.15$Length)
+
+
+### 2016
+tmp.16 <- filterD(Cond,Year==2016)
+str(tmp.16)
+unique(tmp.16$Year)
+unique(tmp.16$Site);length(unique(tmp.16$Site)) ### Sites; Number of Sites
+nrow(tmp.16) ### n Fish
+mean(tmp.16$Length)
+```
+
+| Year  | Number of Fish | Number of Sites |
+|:-----:|:--------------:|:---------------:|
+| 2013  |      114       |         8       |
+| 2014  |      143       |        11       |
+| 2015  |       80       |         9       |
+| 2016  |      132       |        11       |
+| Total |      469       |        18       |
+  
+  12 nearshore sites were sampled annually 2013 - 2016, 10 sites are sampled every year in addition to 2 sites which are sampled every five years. Length and weight data used in our analysis were obtained from 114 largemouth bass caught during 2013, 143 during 2014, 80 during 2015, and 132 during 2016. During 2013 - 2016 a total of 469 largemouth bass were obtained from 18 sites.    
+  
+
 ```{r Getting Standard Weight values from literature (FSA Package)}
 (wsLMB <- wsVal("Largemouth Bass", simplify = TRUE))
 (wsLMB_min <- wsLMB[["min.TL"]])
