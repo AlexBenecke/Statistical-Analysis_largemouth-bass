@@ -70,6 +70,7 @@ Lets start exploring the relative weight data. I have two questions I would like
 
 ```{r Anova Wr Year, tidy=TRUE}
 aov1 <- lm(Wr~fyr,data=Stock)
+#save(aov1,file = "model-output/aov1.rda")
 Anova(aov1)
 
 mc1 <- glht(aov1,mcp(fyr="Tukey"))

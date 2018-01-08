@@ -35,12 +35,15 @@ str(Age)
 
 ```{r Jim and Alex Age Bias Object, include=TRUE}
 ab.AB <- ageBias(AgerA~AgerB, data=Age, ref.lab = "Ager B", nref.lab = "Ager A")
+#1-8-2018#save(ab.AB, file = "model-output/ab.AB.rda")
 ```
 ```{r Alex and Steve Bias Object, include=TRUE}
 ab.AC <- ageBias(AgerA~AgerC,data = Age,ref.lab = "Ager C", nref.lab = "Ager A")
+#1-8-2018#save(ab.AC, file = "model-output/ab.AC.rda")
 ```
 ```{r Jim and Steve Bias Object, include=TRUE}
 ab.BC <- ageBias(AgerB~AgerC,data = Age,ref.lab = "Ager C", nref.lab = "Ager B")
+#1-8-2018#save(ab.BC, file = "model-output/ab.BC.rda")
 ```
 
 \newpage

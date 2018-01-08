@@ -69,21 +69,25 @@ psd.16 <- filter(PSD,Year==2016)
 (PSD_CI_13 <- psdCalc(~Length, data=psd.13,
         species = "Largemouth Bass",
         what = "traditional"))
+#save(PSD_CI_13,file = "model-output/PSD_CI_13.rda")
 
 ### 2014
 (PSD_CI_14 <- psdCalc(~Length, data=psd.14,
         species = "Largemouth Bass",
         what = "traditional"))
+#save(PSD_CI_14,file = "model-output/PSD_CI_14.rda")
 
 ### 2015
 (PSD_CI_15 <- psdCalc(~Length, data=psd.15,
         species = "Largemouth Bass",
         what = "traditional"))
+#save(PSD_CI_15,file = "model-output/PSD_CI_15.rda")
 
 ### 2016
 (PSD_CI_16 <- psdCalc(~Length, data=psd.16,
         species = "Largemouth Bass",
         what = "traditional"))
+#save(PSD_CI_16,file = "model-output/PSD_CI_16.rda")
 ```
 
 **Notice**

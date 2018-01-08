@@ -51,6 +51,7 @@ plot(log(ct)~Age,data=catch,xlab="Age (years)",ylab="log Catch",pch=19)
 
 ```{r Chapman-Robson Method, tidy=TRUE}
 LMB.cr <- chapmanRobson(ct~Age,data=catch,ages2use=2:8)
+#1-8-2018#save(LMB.cr, file = "model-output/LMB.cr.rda")
 
 ### Show the survival and Instantaneous mortality estimates 
 ### from chapman-robson method

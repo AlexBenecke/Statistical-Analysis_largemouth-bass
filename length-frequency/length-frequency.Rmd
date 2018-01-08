@@ -44,10 +44,15 @@ headtail(lmb)
 
 ```{r new df by year, tidy=TRUE}
 lmb.12 <- filter(lmb,Year==2012)
+#1-8-2018#write.csv(lmb.12, file = "Data/Clean-Data/minor-data/lmb.12.csv")
 lmb.13 <- filter(lmb,Year==2013)
+#1-8-2018#write.csv(lmb.13, file = "Data/Clean-Data/minor-data/lmb.13.csv")
 lmb.14 <- filter(lmb,Year==2014)
+#1-8-2018#write.csv(lmb.14, file = "Data/Clean-Data/minor-data/lmb.14.csv")
 lmb.15 <- filter(lmb,Year==2015)
+#1-8-2018#write.csv(lmb.15, file = "Data/Clean-Data/minor-data/lmb.15.csv")
 lmb.16 <- filter(lmb,Year==2016)
+#1-8-2018#write.csv(lmb.16, file = "Data/Clean-Data/minor-data/lmb.16.csv")
 ```
 \newpage
 ### Length Frequency Distribution
