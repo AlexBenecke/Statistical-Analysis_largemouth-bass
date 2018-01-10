@@ -1,5 +1,5 @@
 ---
-title: "Condition of Lake Erie Largemouth Bass Sampled in the ODOW Nearshore Community Survey 2014-2016"
+title: "Condition of Lake Erie Largemouth Bass Sampled in the ODOW Nearshore Community Survey 2014-2017"
 author: "Alex Benecke"
 date: "January 4, 2018"
 output: pdf_document
@@ -25,8 +25,9 @@ library(Matching)
 ```
 
 ```{r Load Data, results='hide'}
-Stock <- read.csv("Data/Clean-Data/2012-2016_nearshore-survey-largemouth-bass_Stock_CLEAN.csv") %>% 
+Stock <- read.csv("Data/Clean-Data/2012-2017_nearshore-survey-largemouth-bass_Stock_CLEAN.csv") %>% 
   filter(fyr>=2014) %>%
+  filter(!is.na(Wr)) %>%
   arrange(Year,gcat)
 
 Stock$fyr <- as.factor(Stock$fyr)
@@ -78,13 +79,13 @@ summary(mc1)
 ```
 
 
-  Looks like Wr is different between years (One-Way ANOVA, $F_{2, 311}$ = 5.04, p = 0.007). There is no difference in relative weight between 2015 and 2014 (Tukey HSD, t = 0.1, p = 0.99). However, relative weight is significantly different between 2016 and 2014 (Tukey HSD, t = 2.98, p = 0.009), and 2016 and 2015 (Tukey HSD, t = 2.36, p = 0.049).
+  Looks like Wr *is significantly different* between years (One-Way ANOVA, $F_{3, 345}$ = 7.17, p < 0.001). There is *no significant difference* in relative weight between 2015 and 2014 (Tukey HSD, t = 0.085, p = 1), 2016 and 2014 (Tukey HSD, t = 2.56, p = 0.06), 2016 and 2015 (Tukey HSD, t = 2.00, p = 0.18), and 2016 and 2017 (Tukey HSD, t = 2.37, p = 0.08). However, relative weight *is significantly different* between 2017 and 2014 (Tukey HSD, t = 4.16, p < 0.001), and 2017 and 2015 (Tukey HSD, t = 3.71, p = 0.001).
 
 
 ### constructing a plot of Wr and Year
 
 ```{r Create Results to be plotted, tidy=TRUE}
-grps <- c("2014", "2015", "2016")
+grps <- c("2014", "2015", "2016", "2017")
 nd <- data.frame(fyr=factor(grps,levels = grps))
 (pred <- predict(aov1,nd,interval = "confidence"))
 
@@ -94,7 +95,7 @@ nd <- data.frame(fyr=factor(grps,levels = grps))
 plotCI(as.numeric(nd$fyr), pred[,"fit"],
        li = pred[,"lwr"], ui = pred[,"upr"],
        pch=19, xaxt = "n", 
-       xlim = c(0.8, 3.35), ylim = c(100,120),
+       xlim = c(0.8, 4.2), ylim = c(100,135),
        xlab = "Year", ylab = "Mean Wr")
 
 lines(nd$fyr, pred[,"fit"],col="gray50")
@@ -103,7 +104,7 @@ axis(1,at=nd$fyr, labels = nd$fyr)
 
 cld(mc1)
 
-text(x=nd$fyr, y=pred[,"upr"], labels = c("a", "a", "b"), pos=3)
+text(x=nd$fyr, y=pred[,"upr"], labels = c("a", "a", "ab", "b"), pos=3)
 ```
 
 
@@ -112,18 +113,40 @@ residPlot(aov1)
 leveneTest(aov1)
 ```
 
+  This seems to suggest that the data violates the assumption that errors are normally distributed ($F_{3,345}$ = 9.97, p < 0.001). 
 
-  Variance are equal and the homoscedasticity assumption is likley met (Levene's Test, $F_{2, 311}$ = 1.75, p = 0.18).
+  **Without 2017** *Variance are equal and the homoscedasticity assumption is likley met (Levene's Test, $F_{2, 311}$ = 1.75, p = 0.18).*
 
 
 ```{r real quick make Wr.csv from pred, tidy=TRUE}
-Year <- c("2014", "2015", "2016")
+Year <- c("2014", "2015", "2016", "2017")
 pred <- data.frame(Year,pred)
 names(pred) <- c("Year", "Wr", "LCI", "UCI")
 str(pred)
 head(pred)
-#1-4-18#write.csv(pred,file = "Data/Clean-Data/relative-weight_largemouth-bass_STOCK.csv")
+#1-10-2018#write.csv(pred,file = "Data/Clean-Data/relative-weight_largemouth-bass_STOCK.csv")
 ```
+
+### Kruskal-Wallis Test
+
+  A non-parametric equivalent to a one-way ANOVA. This will test if distributions are similarly shaped with equal variances among groups, that the medians are equal among all groups.
+  
+```{r Kruskal-Wallis Test}
+kruskal.test(Wr~fyr,data = Stock)
+```
+
+  This seems to sugest that the median for at least one group differs from the medians of one or more of the years (Kruskal-Wallis rank sum test, Kruskal-wallis chi-squared = 17.5, df = 3, p < 0.001).
+  
+```{r Dunn Multiple Comparison}
+dunnTest(Wr~fyr,data = Stock, method = "bonferroni")
+dunnTest(Wr~fyr,data = Stock, method = "holm")
+```
+
+**Holm adjusted p-value**
+
+  The Wr *is significantly different* between 2014 and 2016 (Dunn Multiple Comarison Test, Z = -3.77, p < 0.001), and 2015 and 2016 (Dunn Multiple Comarison Test, Z = -2.64, p = 0.041). However, Wr is not different between any other years.
+
+
 
 ### To Be Continued...
 

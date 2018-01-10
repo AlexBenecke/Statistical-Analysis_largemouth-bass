@@ -27,7 +27,14 @@ library(magrittr)
 library(Matching)
 ```
 
+   Now that I have some data from the 2017 nearsore survey I want to add this into the rest of the data (1-10-2018).
+```{r Load 2017 Data}
+LMB.17 <- read.csv("Data/Raw-Data/2017_largemouth-bass.csv") %>%
+  mutate(logW=log10(Weight),logL=log10(Length))
+LMB.17$fyr <- factor(LMB.17$Year)
 
+headtail(LMB.17)
+```
 ```{r load data}
 Cond <- read.csv("./Data/Raw-Data/2012-2016_nearshore-survey_largemouth-bass.csv") %>%
   mutate(logW=log10(Weight),logL=log10(Length))
@@ -37,6 +44,16 @@ str(Cond)
 headtail(Cond)
 unique(Cond$Year)
 ```
+```{r Join 2017 and the Rest of the Data}
+head(LMB.17)
+head(Cond) ### Just making sure I have the same variables
+
+Cond <- rbind(Cond,LMB.17)
+headtail(Cond)
+unique(Cond$Year)
+```
+
+
 
 ```{r Data Exploration Quick Discription, include=FALSE}
 ### 2013
@@ -72,17 +89,26 @@ unique(tmp.16$Year)
 unique(tmp.16$Site);length(unique(tmp.16$Site)) ### Sites; Number of Sites
 nrow(tmp.16) ### n Fish
 mean(tmp.16$Length)
+
+### 2017
+tmp.17 <- filterD(Cond,Year==2017)
+str(tmp.17)
+unique(tmp.17$Year)
+unique(tmp.17$Site);length(unique(tmp.17$Site)) ### Sites; Number of Sites
+nrow(tmp.17) ### n Fish
+mean(tmp.17$Length)
 ```
 
-| Year  | Number of Fish | Number of Sites |
-|:-----:|:--------------:|:---------------:|
-| 2013  |      114       |         8       |
-| 2014  |      143       |        11       |
-| 2015  |       80       |         9       |
-| 2016  |      132       |        11       |
-| Total |      469       |        18       |
+| Year  | Number of Fish | Number of Sites |       Unique        |
+|:-----:|:--------------:|:---------------:|:-------------------:|
+| 2013  |      114       |         8       | 1 site NA           |
+| 2014  |      143       |        11       | 2 unique (1 & 16)   |
+| 2015  |       80       |         9       | 1 Unique (site 5)   |
+| 2016  |      132       |        10       | 1 Unique (14)       |
+| 2017  |       43       |         9       | 1+1=2 unique (3&9)  |
+| Total |      469       |        18       | 17 -18 Unique Sites |
   
-  12 nearshore sites were sampled annually 2013 - 2016, 10 sites are sampled every year in addition to 2 sites which are sampled every five years. Length and weight data used in our analysis were obtained from 114 largemouth bass caught during 2013, 143 during 2014, 80 during 2015, and 132 during 2016. During 2013 - 2016 a total of 469 largemouth bass were obtained from 18 sites.    
+  12 nearshore sites were sampled annually 2013 - 2017, 10 sites are sampled every year in addition to 2 sites which are sampled every five years. Length and weight data used in our analysis were obtained from 114 largemouth bass caught during 2013, 143 during 2014, 80 during 2015, and 132 during 2016. During 2013 - 2016 a total of 469 largemouth bass were obtained from 18 sites.    
   
 
 ```{r Getting Standard Weight values from literature (FSA Package)}
@@ -114,7 +140,7 @@ lmb <- Cond %>%
   
 headtail(lmb[,c(1,3,5,14:16)])
 lmb[c(275:335),c(1,3,5,14:16)]
-#write.csv(lmb,file="Data/Clean-Data/2012-2016_nearshore-survey-largemouth-bass_CLEAN.csv") 
+#1-10-2018#write.csv(lmb,file="Data/Clean-Data/2012-2017_nearshore-survey-largemouth-bass_CLEAN.csv") 
 ```
 
 
@@ -130,7 +156,7 @@ Stock <- Cond %>%
   
 headtail(Stock[,c(1,3,5,14:16)])
 Stock[c(275:335),c(1,3,5,14:16)]
-#write.csv(Stock,file="Data/Clean-Data/2012-2016_nearshore-survey-largemouth-bass_Stock_CLEAN.csv")
+#1-10-2018#write.csv(Stock,file="Data/Clean-Data/2012-2017_nearshore-survey-largemouth-bass_Stock_CLEAN.csv")
 ```
 
 
@@ -146,7 +172,7 @@ Summarize(Wr~fyr, data=Stock, digits = 0) ### Wr Weight by Year
     arrange(fyr,gcat))
 str(Wr.fyr.gcat_Stock)
 
-#1-4-18#write.csv(Wr.fyr.gcat_Stock,file = "Data/Raw-Data/relative-weight_largemouth-bass_STOCK_RAW.csv")
+#1-10-2018#write.csv(Wr.fyr.gcat_Stock,file = "Data/Raw-Data/relative-weight_largemouth-bass_STOCK_RAW.csv")
 ```
 
   I have created a file with the relative weight of each gabelhouse length category for each year. The file name is relative-weight_largemouth-bass_RAW.csv.
@@ -165,7 +191,7 @@ lmb.Wr <- lmb %>%
 (lmb.Wr.gcat <- Summarize(Wr~fyr*gcat,data = lmb.Wr,digits = 0) %>%
     arrange(fyr,gcat))
 
-#1-4-18#write.csv(lmb.Wr.gcat,file = "Data/Clean-Data/relative-weight_largemouth-bass_150.csv")
+#1-10-2018#write.csv(lmb.Wr.gcat,file = "Data/Clean-Data/relative-weight_largemouth-bass_150.csv")
 ```
 
 
