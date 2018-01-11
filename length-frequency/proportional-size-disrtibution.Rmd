@@ -28,9 +28,12 @@ lmbs <- read.csv("Data/Clean-Data/2012-2017_nearshore-survey-largemouth-bass_Sto
   filter(Year>=2013) %>%
   arrange(Year,FID,Length)
 lmbs$fyr <- as.factor(lmbs$fyr)
-
+```
+```{r view data, include=FALSE}
 str(lmbs)
 headtail(lmbs)
+```
+```{r Check years}
 unique(lmbs$Year) ### See that there is no 2012
 ```
 
@@ -41,7 +44,7 @@ unique(lmbs$Year) ### See that there is no 2012
 
 ### Chi-Squares Test
  
- **Is there a difference in the number of fish in each gabelhouse categorie during the years 2013 - 2017?**
+ **Is there a difference in the number of fish in each gabelhouse length category (PSD-X) during the years 2013 - 2017?**
  
 ```{r Chi-Square test}
 chisq.test(lmbs.LF)
@@ -50,7 +53,7 @@ chisq.test(lmbs.LF)
   This seems to suggest that the proportional stock distribution (PSD) is different for largemouth bass between years ($X^{2}$ = 20.055, df = 8, P = 0.01013).
   
   
-  **In which years is PSD different?**
+  **Where are the differences in PSD X-Y for each year?**
   
   Creating a table of percent of fish in each gabelhouse length interval (PSD X-Y) in each year.
   
@@ -58,21 +61,15 @@ chisq.test(lmbs.LF)
 round(prop.table(lmbs.LF,margin=1)*100,0)
 ```
 
-  Remarkably the percent of quality fish is the same for 2014 and 2016 and a bit higher for 2015. the percentage of fish in each gcat is similar between years 2013, 2014, 2016, and 2017. However, the year 2015 appears to have a higher percentage of large fish and far fewer small fish. 
-
+  Remarkably the percent of quality fish is the same for 2014 and 2016. the percent of quality length fish is very similar between 2013 (42%), 2014 (41%), 2016 (41%), and 2017 (43%). This trend is almost the same for stock length fish (2013 42%, 2014 46%, 2016 49%), however 2015 and 2017 have a smaller percentage of stock length fish (21% and 31% respectivley). This may be explained by more variability among years for this length category, reduced sampling efficiency for smaller fish, or unstable recruitment. The year 2015 seems to break the trend with a greater percentage of preferred (22%) and quality (57%) length individuals than other years. 
 
 1) Could this be some sort of sampling bias?
 
 2) Could this be a result of sampling different sites? where the 2015 sites more suitable for LMB?
   
-3) Are the years really different or do I just have too few to say for sure?
-
 
 ### Compare PSD-Q between years 2013 - 2017
 
-**Note:**
-
-  *The analysis below should be considered only if the chi-squared test above failed. These are pooled data. Since the above test did not fail due to inadaquate sample sizes in some cells there is no reason to pool the data.* 
 
 ```{r Create new gcatQ variable Grouping Q- and Q+}
 lmbs %<>% mutate(gcatQ=mapvalues(gcat,
@@ -112,7 +109,7 @@ names(Chisq.PSD_Q.yr) <- c("Year", "p-value", "Adjusted p")
 Chisq.PSD_Q.yr
 ```
 
-  The PSD-Q of largemouth bass is different for at least one of the years during 2013 - 2016 (Chi-Squared, $X^{2}$ = 16.815, df = 4, p = 0.0021). The adjusted p-values show a *significant difference* in PSD-Q between years 2014 - 2015 (p = 0.0064) and 2015 - 2016 (p = 0.0046). The PSD-Q is not different between any other years. However 2013 and 2015 may be different (p = 0.0675).
+  The PSD-Q of largemouth bass is different for at least one of the years during 2013 - 2017 (Chi-Squared, $X^{2}$ = 16.815, df = 4, p = 0.0021). The adjusted p-values show a *significant difference* in PSD-Q between years 2014 - 2015 (p = 0.0064) and 2015 - 2016 (p = 0.0046). The PSD-Q is not different between any other years. However 2013 and 2015 may be different (p = 0.0675).
   
 
 ### Compare PSD-P between years 2013 - 2017

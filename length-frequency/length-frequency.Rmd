@@ -27,9 +27,12 @@ library(Matching)
 lmb <- read.csv("Data/Clean-Data/2012-2017_nearshore-survey-largemouth-bass_CLEAN.csv") %>%
   arrange(Year,FID,Length)
 lmb$fyr <- as.factor(lmb$fyr)
-
+```
+```{r view data, include=FALSE}
 str(lmb)
 headtail(lmb)
+```
+```{r check years}
 unique(lmb$Year) ### See that there is no 2013
 ```
 
@@ -37,6 +40,8 @@ unique(lmb$Year) ### See that there is no 2013
 
 ```{r lcat20, tidy=TRUE}
 lmb %<>% mutate(lcat20=lencat(Length,w=20))
+```
+```{r, include=FALSE}
 headtail(lmb)
 ```
 
@@ -286,7 +291,7 @@ summary(ksb.16.17)
             ks.test(lmb.16$Length,lmb.17$Length)$p.value))
 (p.val <- p.adjust(ks.ps))
 ```
-```{r Make Adjuster p-values a little easier to read, cache=TRUE, tidy=TRUE}
+```{r Make Adjuster p-values a little easier to read, cache=TRUE, tidy=TRUE, echo = FALSE}
 (D <- c(ks.13.14$statistic[[1]], 
         ks.13.15$statistic[[1]],
         ks.13.16$statistic[[1]],
@@ -299,7 +304,7 @@ summary(ksb.16.17)
         ks.16.17$statistic[[1]]))
 (yrs <- c("13-14","13-15","13-16","13-17","14-15","14-16","14-17","15-16","15-17","16-17"))
 ```
-```{r Lets look at results from the K-S test, cache=TRUE, tidy=TRUE}
+```{r Lets look at results from the K-S test, cache=FALSE, tidy=TRUE}
 (p.yr <- data.frame(yrs,D,p.val))
 ```
 
