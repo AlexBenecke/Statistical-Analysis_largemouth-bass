@@ -52,6 +52,8 @@ chisq.test(lmbs.LF)
   
   **In which years is PSD different?**
   
+  Creating a table of percent of fish in each gabelhouse length interval (PSD X-Y) in each year.
+  
 ```{r percent of fish in each gcat by year}
 round(prop.table(lmbs.LF,margin=1)*100,0)
 ```
@@ -67,6 +69,10 @@ round(prop.table(lmbs.LF,margin=1)*100,0)
 
 
 ### Compare PSD-Q between years 2013 - 2017
+
+**Note:**
+
+  *The analysis below should be considered only if the chi-squared test above failed. These are pooled data. Since the above test did not fail due to inadaquate sample sizes in some cells there is no reason to pool the data.* 
 
 ```{r Create new gcatQ variable Grouping Q- and Q+}
 lmbs %<>% mutate(gcatQ=mapvalues(gcat,
