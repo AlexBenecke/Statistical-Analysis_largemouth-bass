@@ -153,10 +153,117 @@ Chisq.PSD_P.yr
 
 
 
+### PSD-X Without 2017
+
+  I want to re-run the analysis without the year 2017 because I have decided to throw this year out due to incomplete sampling. I have left the code with 2017 above for future reference. 
 
 
+### View Data
+```{r Create a Table of Fish in each gcat by Year no 2017}
+(lmbs.LF <- xtabs(~Year+gcat,data=lmbs[lmbs$Year<2017,]))
+```
+
+### Chi-Squares Test (no 2017)
+ 
+ **Is there a difference in the number of fish in each gabelhouse length category (PSD-X) during the years 2013 - 2017?**
+ 
+```{r Chi-Square test no 2017}
+chisq.test(lmbs.LF)
+```
+
+  This seems to suggest that the proportional stock distribution (PSD) is different for largemouth bass between years ($X^{2}$ = 16.694, df = 8, P = 0.01048).
+  
+  
+  **Where are the differences in PSD X-Y for each year?**
+  
+  Creating a table of percent of fish in each gabelhouse length interval (PSD X-Y) in each year.
+  
+```{r percent of fish in each gcat by year (no 2017)}
+round(prop.table(lmbs.LF,margin=1)*100,0)
+```
+
+  Remarkably the percent of quality fish is the same for 2014 and 2016. the percent of quality length fish is very similar between 2013 (42%), 2014 (41%), and 2016 (41%). This trend is almost the same for stock length fish (2013 42%, 2014 46%, 2016 49%), however, 2015 has a smaller percentage of stock length fish (21%). This may be explained by more variability among years for this length category, reduced sampling efficiency for smaller fish, or unstable recruitment.  
+
+1) Could this be some sort of sampling bias?
+
+2) Could this be a result of sampling different sites? where the 2015 sites more suitable for LMB?
+  
+
+### Compare PSD-Q between years 2013 - 2016
 
 
+```{r Create new gcatQ variable Grouping Q- and Q+ 2013-16}
+lmbs.1316 <- lmbs[lmbs$Year<2017,]
+lmbs.1316 %<>% mutate(gcatQ=mapvalues(gcat,
+                                 from=c("stock","quality","preferred"),
+                                 to=c("quality-", "quality+", "quality+")),
+                 gcatQ=droplevels(gcatQ))
+
+(lmb.LFQ.1316 <- xtabs(~Year+gcatQ,data = lmbs.1316))
+
+chisq.test(lmb.LFQ.1316)
+```
+
+```{r Adjusted p-values PSD-Q 2013-16, results='hide'}
+
+(ps.Q.1316 <- c(chisq.test(lmb.LFQ.1316[c(1,2),])$p.value,  ### 2013-2014
+           chisq.test(lmb.LFQ.1316[c(1,3),])$p.value,  ### 2013-2015
+           chisq.test(lmb.LFQ.1316[c(1,4),])$p.value,  ### 2013-2016
+           chisq.test(lmb.LFQ.1316[c(2,3),])$p.value,  ### 2014-2015
+           chisq.test(lmb.LFQ.1316[c(2,4),])$p.value,  ### 2014-2016
+           chisq.test(lmb.LFQ.1316[c(3,4),])$p.value)) ### 2015-2016
+
+(p.val.Q.1316 <- p.adjust(ps.Q.1316))
+
+```
+
+```{r Summarizing Adjusted p-values by year for PSD-Q 2013-16, echo=FALSE}
+(yrs <- c("13-14","13-15","13-16","14-15","14-16","15-16"))
+
+
+Chisq.PSD_Q.yr.1316 <- data.frame(yrs,round(ps.Q.1316,4),round(p.val.Q.1316,4))
+
+names(Chisq.PSD_Q.yr.1316) <- c("Year", "p-value", "Adjusted p")
+Chisq.PSD_Q.yr.1316
+```
+
+  The PSD-Q of largemouth bass *is significantly different* for at least one of the years during 2013 - 2016 (Chi-Squared, $X^{2}$ = 15.306, df = 3, p = 0.0015). The adjusted p-values show a *significant difference* in PSD-Q between years 2013 - 2015 (p = 0.0337), 2014 - 2016 (p = 0.0036), and 2015 - 2016 (p = 0.0027). The PSD-Q *is not significantly different* between any other years.
+  
+
+### Compare PSD-P between years 2013 - 2016
+
+```{r Create new gcatP variable Grouping P- and P+ 2013-2016}
+lmbs.1316 %<>% mutate(gcatP=mapvalues(gcat,
+                                 from=c("stock","quality","preferred"),
+                                 to=c("preferred-", "preferred-", "preferred+")),
+                 gcatP=droplevels(gcatP))
+
+(lmb.LFP.1316 <- xtabs(~Year+gcatP,data = lmbs.1316))
+
+chisq.test(lmb.LFP.1316)
+```
+
+```{r Adjusted p-values PSD-P 2013-16, results='hide'}
+(ps.P.1316 <- c(chisq.test(lmb.LFP.1316[c(1,2),])$p.value,  ### 2013-2014
+           chisq.test(lmb.LFP.1316[c(1,3),])$p.value,  ### 2013-2015
+           chisq.test(lmb.LFP.1316[c(1,4),])$p.value,  ### 2013-2016
+           chisq.test(lmb.LFP.1316[c(2,3),])$p.value,  ### 2014-2015
+           chisq.test(lmb.LFP.1316[c(2,4),])$p.value,  ### 2014-2016
+           chisq.test(lmb.LFP.1316[c(3,4),])$p.value))  ### 2015-2016
+
+(p.val.P.1316 <- p.adjust(ps.P.1316))
+```
+
+```{r Summarizing Adjusted p-values by year for PSD-P 2013-16, echo=FALSE}
+(yrs <- c("13-14","13-15","13-16","14-15","14-16","15-16"))
+
+Chisq.PSD_P.yr.1316 <- data.frame(yrs, round(ps.P.1316,4),round (p.val.P.1316,4))
+names(Chisq.PSD_P.yr.1316) <- c("Year", "p-value", "Adjusted p")
+Chisq.PSD_P.yr.1316
+```
+
+
+  The PSD-P of largemouth bass is *not significantly different* for any years during 2013 - 2016 (Chi-Squared, $X^{2}$ = 5.45, df = 3, p = 0.14). The adjusted p-values show no difference in the PSD-P between years (2013 - 2016).
 
 
 

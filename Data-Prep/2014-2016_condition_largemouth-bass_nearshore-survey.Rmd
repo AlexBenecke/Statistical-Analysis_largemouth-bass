@@ -147,7 +147,6 @@ dunnTest(Wr~fyr,data = Stock, method = "holm")
   The Wr *is significantly different* between 2014 and 2016 (Dunn Multiple Comarison Test, Z = -3.77, p < 0.001), and 2015 and 2016 (Dunn Multiple Comarison Test, Z = -2.64, p = 0.041). However, Wr is not different between any other years.
 
 
-
 ### To Be Continued...
 
   I will look into the difference in Wr between gcat at a later date. I don't think this matters so much as of now.
