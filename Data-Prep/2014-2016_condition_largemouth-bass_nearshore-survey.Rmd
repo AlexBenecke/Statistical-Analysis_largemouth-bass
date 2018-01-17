@@ -85,26 +85,28 @@ summary(mc1)
 ### constructing a plot of Wr and Year
 
 ```{r Create Results to be plotted, tidy=TRUE}
-grps <- c("2014", "2015", "2016", "2017")
-nd <- data.frame(fyr=factor(grps,levels = grps))
-(pred <- predict(aov1,nd,interval = "confidence"))
+grps.1 <- c("2014", "2015", "2016", "2017")
+nd.1 <- data.frame(fyr=factor(grps.1,levels = grps.1))
+(pred.1 <- predict(aov1,nd.1,interval = "confidence"))
 
 ```
 
 ```{r Plot Wr by Year, tidy=TRUE}
-plotCI(as.numeric(nd$fyr), pred[,"fit"],
-       li = pred[,"lwr"], ui = pred[,"upr"],
+plotCI(as.numeric(nd.1$fyr), pred.1[,"fit"],
+       li = pred.1[,"lwr"], ui = pred.1[,"upr"],
        pch=19, xaxt = "n", 
-       xlim = c(0.8, 4.2), ylim = c(100,135),
+       xlim = c(0.8, 4.2), ylim = c(65,135),
        xlab = "Year", ylab = "Mean Wr")
 
-lines(nd$fyr, pred[,"fit"],col="gray50")
+lines(nd.1$fyr, pred.1[,"fit"],col="gray50")
 
-axis(1,at=nd$fyr, labels = nd$fyr)
+axis(1,at=nd.1$fyr, labels = nd.1$fyr)
 
 cld(mc1)
 
-text(x=nd$fyr, y=pred[,"upr"], labels = c("a", "a", "ab", "b"), pos=3)
+text(x=nd.1$fyr, y=pred.1[,"upr"], labels = c("a", "a", "ab", "b"), pos=3)
+
+abline(h=100,lty=4,col="green")
 ```
 
 
@@ -145,6 +147,74 @@ dunnTest(Wr~fyr,data = Stock, method = "holm")
 **Holm adjusted p-value**
 
   The Wr *is significantly different* between 2014 and 2016 (Dunn Multiple Comarison Test, Z = -3.77, p < 0.001), and 2015 and 2016 (Dunn Multiple Comarison Test, Z = -2.64, p = 0.041). However, Wr is not different between any other years.
+
+
+
+
+
+### 2014-2016
+
+  I want to redo the above analysis without the 2017 which I have decided not to use due to differences in data collection. I will leave the above code for now incase I or one of my coauthors wants to reference it later.
+
+
+```{r Anova Wr Year 2014 - 2016, tidy=TRUE}
+aov2 <- lm(Wr~fyr,data=Stock[Stock$Year<2017,])
+#save(aov2,file = "model-output/aov2.rda")
+Anova(aov2)
+
+mc2 <- glht(aov2,mcp(fyr="Tukey"))
+summary(mc2)
+```
+
+  Looks like relative weight *is significantly different* between years (One-Way ANOVA, $F_{2, 311}$ = 5.04, p = 0.007). There is *no significant difference* in relative weight between 2014 and 2015 (Tukey HSD, t = 0.1, p = 0.994). However, relative weight *is significantly different* between 2014 and 2016 (Tukey HSD, t = 2.98, p = 0.009), and 2015 and 2016 (Tukey HSD, t = 2.36, p = 0.049).
+
+
+### constructing a plot of Wr and Year 2014 - 2016
+
+```{r Create Results to be plotted 2014 - 2016, tidy=TRUE}
+grps <- c("2014", "2015", "2016")
+nd <- data.frame(fyr=factor(grps,levels = grps))
+(pred <- predict(aov2,nd,interval = "confidence"))
+
+```
+
+```{r Plot Wr by Year 2014 - 2016, tidy=TRUE}
+plotCI(as.numeric(nd$fyr), pred[,"fit"],
+       li = pred[,"lwr"], ui = pred[,"upr"],
+       pch=19, xaxt = "n", 
+       xlim = c(0.8, 3.35), ylim = c(75,125),
+       xlab = "Year", ylab = "Mean Wr")
+
+lines(nd$fyr, pred[,"fit"],col="gray50")
+
+axis(1,at=nd$fyr, labels = nd$fyr)
+
+cld(mc2)
+
+text(x=nd$fyr, y=pred[,"upr"], labels = c("a", "a", "b"), pos=3)
+
+abline(h=100,lty=4,col="green")
+```
+
+
+```{r Testing Assumptions 2014 - 2016, tidy=TRUE}
+residPlot(aov2)
+leveneTest(aov2)
+```
+
+  Variance are equal and the homoscedasticity assumption is likley met (Levene's Test, $F_{2, 311}$ = 1.75, p = 0.18).
+
+
+```{r real quick make Wr.csv from pred 2014 - 2016, tidy=TRUE}
+Year <- c("2014", "2015", "2016")
+pred <- data.frame(Year,pred)
+names(pred) <- c("Year", "Wr", "LCI", "UCI")
+str(pred)
+head(pred)
+#1-17-2018#write.csv(pred,file = "Data/Clean-Data/2014-16_relative-weight_largemouth-bass_STOCK.csv")
+```
+
+
 
 
 ### To Be Continued...
