@@ -1,0 +1,80 @@
+---
+title: "Alnger Effort 2005 - 2016"
+author: "Alex J. Benecke"
+date: "January 24, 2018"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+eff <- read.csv("Data/Raw-Data/Angler-Effort_2005-16.csv")
+
+head(eff)
+str(eff)
+```
+
+
+```{r}
+(eff$BB.Per.All <- eff$LMB_SMB/eff$All.SP)
+(eff$BB_Percent <- eff$BB.Per.All*100)
+head(eff)
+
+
+lm1 <- lm(BB_Percent~Year,data=eff)
+
+summary(lm1)
+anova(lm1)
+
+plot(BB_Percent~Year,data=eff,
+     type="b",
+     pch=19,
+     bty="n")
+abline(lm1)
+
+
+mean(eff$BB_Percent)
+sd(eff$BB_Percent)
+```
+
+
+
+
+```{r}
+eff$LMB_mil <- eff$LMB/1000
+eff$SMB_mil <- eff$SMB/1000
+head(eff)
+(y.max <- max(eff$SMB_mil))
+(y.min <- min(eff$LMB_mil))
+```
+```{r}
+plot(SMB_mil~Year,data=eff,
+     ylim = c(y.min,y.max),
+     xlim = c(2005,2016),
+     ylab="Angler Hours (x1000) ",
+     xlab="Year",
+     type="b",
+     pch=19,
+     col="red",
+     bty="n")
+par(new=T)
+plot(LMB_mil~Year,data=eff,
+     ylim = c(y.min,y.max),
+     xlim = c(2005,2016),
+     ylab="",xlab="",
+     type="b",
+     pch=19,
+     col="blue",
+     bty="n")
+```
+
+
+
+
+
+
