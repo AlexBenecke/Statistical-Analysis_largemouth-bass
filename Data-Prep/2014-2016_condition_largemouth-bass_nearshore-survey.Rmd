@@ -122,11 +122,11 @@ leveneTest(aov1)
 
 ```{r real quick make Wr.csv from pred, tidy=TRUE}
 Year <- c("2014", "2015", "2016", "2017")
-pred <- data.frame(Year,pred)
-names(pred) <- c("Year", "Wr", "LCI", "UCI")
-str(pred)
-head(pred)
-#1-10-2018#write.csv(pred,file = "Data/Clean-Data/relative-weight_largemouth-bass_STOCK.csv")
+pred.1 <- data.frame(Year,pred.1)
+names(pred.1) <- c("Year", "Wr", "LCI", "UCI")
+str(pred.1)
+head(pred.1)
+#1-10-2018#write.csv(pred.1,file = "Data/Clean-Data/relative-weight_largemouth-bass_STOCK.csv")
 ```
 
 ### Kruskal-Wallis Test
@@ -166,7 +166,7 @@ mc2 <- glht(aov2,mcp(fyr="Tukey"))
 summary(mc2)
 ```
 
-  Looks like relative weight *is significantly different* between years (One-Way ANOVA, $F_{2, 311}$ = 5.04, p = 0.007). There is *no significant difference* in relative weight between 2014 and 2015 (Tukey HSD, t = 0.1, p = 0.994). However, relative weight *is significantly different* between 2014 and 2016 (Tukey HSD, t = 2.98, p = 0.009), and 2015 and 2016 (Tukey HSD, t = 2.36, p = 0.049).
+  Looks like relative weight *is significantly different* between years (One-Way ANOVA, $F_{2, 311}$ = 5.04, p = 0.007). There is *no significant difference* in relative weight between 2014 and 2015 (Tukey HSD, t = 0.1, p = 0.994). However, relative weight *is significantly different* between 2014 and 2016 (Tukey HSD, t = 2.98, p = 0.008), and 2015 and 2016 (Tukey HSD, t = 2.36, p = 0.049).
 
 
 ### constructing a plot of Wr and Year 2014 - 2016

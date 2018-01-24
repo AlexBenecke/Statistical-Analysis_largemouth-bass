@@ -19,7 +19,6 @@ library(nlme)
 ```
 ```{r Load and Prep Data, tidy=TRUE}
 LMBL <- read.csv("Data/Clean-Data/2016_largemouth-bass_long-format.csv") %>%
-  select(FID:BI.len) %>%
   arrange(FID,Agei)
 
 ### Making factors factors
