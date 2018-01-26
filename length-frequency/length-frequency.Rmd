@@ -148,8 +148,6 @@ hist(~Length,data=lmb.17,
 
   Lets look at the empirical cumulative distribution function (ECDF). This is the proportion of fish less than each observed length. This should help me compare the length frequency distributions between years.
 
-<<<<<<< HEAD
-
 ```{r ECDF 2013 - 2016, cache=TRUE, tidy=TRUE, echo=FALSE}
 par(mfrow=c(1,1)) ### reset to default
 
@@ -187,52 +185,12 @@ plot(ecdf(lmb.16$Length),
      col="green",
      add=T)
 
-=======
 
-```{r ECDF 2013 - 2016, cache=TRUE, tidy=TRUE, echo=FALSE}
-par(mfrow=c(1,1)) ### reset to default
-
-### 2013
-plot(ecdf(lmb.13$Length),
-     xlab="Total Length (mm)",
-     do.points=FALSE,
-     verticals=TRUE, 
-     main="",
-     col.01line = NULL, 
-     col="orange")
-### 2014
-plot(ecdf(lmb.14$Length),
-     xlab="Total Length (mm)", 
-     do.points=FALSE,
-     verticals=TRUE, 
-     main="", 
-     col.01line = NULL,
-     col="red",
-     add=T)
-### 2015
-plot(ecdf(lmb.15$Length),
-     xlab="Total Length (mm)", 
-     do.points=FALSE,
-     verticals=TRUE, 
-     main="", 
-     col.01line = NULL,
-     col="blue", add=T)
-### 2016
-plot(ecdf(lmb.16$Length),
-     xlab="Total Length (mm)",
-     do.points=FALSE,
-     verticals=TRUE, main="",
-     col.01line = NULL, 
-     col="green",
-     add=T)
-
->>>>>>> 344e87b6526b94ae2c0b7c715992fc0a3180d981
 legend("bottomright", 
        c("2013","2014","2015","2016"),
        col=c("orange","red","blue","green"),
        lty=1, bty="n", cex=0.75)
 ```
-<<<<<<< HEAD
 
 ### Compare Length Frequency Between Years 2013 - 2016 ###
 #### Kolmogorov-Smirnov Test ####
@@ -289,8 +247,6 @@ for(i in 1:length(df.tmp$tmp.x)){
 }
 
 (df.tmp2 <- data.frame(df.tmp,result2))
-
-
 ```
 
 |     Year    |    m   |   n  |     0.05     |      0.01     |     0.005      |     0.001      |
@@ -302,12 +258,10 @@ for(i in 1:length(df.tmp$tmp.x)){
 | 2014 - 2016 |   143  | 131  |  0.1644790   |   0.1971329   |   0.2092270    |   0.2358339    |
 | 2015 - 2016 |    80  | 131  |  0.1929743   |   0.2312854   |   0.2454747    |   0.2766911    |
 
-=======
+
 
 ### Compare Length Frequency Between Years 2013 - 2016 ###
 #### Kolmogorov-Smirnov Test ####
-
->>>>>>> 344e87b6526b94ae2c0b7c715992fc0a3180d981
 
 ```{r Kolmogorov-Smirnov Test 2013 - 2016, cache=TRUE, tidy=TRUE, include=FALSE}
 ### 2013 and 2014
@@ -372,11 +326,8 @@ summary(ksb.15.16)
             ks.test(lmb.15$Length,lmb.16$Length)$p.value))
 (p.val <- p.adjust(ks.ps))
 ```
-<<<<<<< HEAD
-```{r Make Adjuster p-values a little easier to read 2013 - 2016, results="hide", cache=TRUE, tidy=TRUE, echo = FALSE}
-=======
 ```{r Make Adjuster p-values a little easier to read 2013 - 2016, cache=TRUE, tidy=TRUE, echo = FALSE}
->>>>>>> 344e87b6526b94ae2c0b7c715992fc0a3180d981
+
 (D <- c(ks.13.14$statistic[[1]], 
         ks.13.15$statistic[[1]],
         ks.13.16$statistic[[1]],
@@ -388,7 +339,6 @@ summary(ksb.15.16)
 ```{r Lets look at results from the K-S test 2013 - 2016, echo=FALSE, results="hide"}
 (p.yr <- data.frame(yrs,D,p.val))
 
-<<<<<<< HEAD
 
 (tmp.3 <- data.frame(Years = yrs,
                      p.value = round(p.yr$p.val,5),
@@ -435,42 +385,7 @@ http://www.introspective-mode.org/kolmogorov-smirnov-goodness-of-fit/
   
   **2014** has a lot of *stock* length individuals ($n_{stock} = 65$) compared to **2013** ($n_{stock} = 41$), **2015** ($n_{stock} = 14$), and **2016** ($n_{stock} = 52$) but far fewer *substock* individuals ($n_{sun-stock} = 3$), **2013** ($n_{sun-stock} = 16$), **2015** ($n_{sun-stock} = 13$), **2016** ($n_{sun-stock} = 24$). **2014** also seems to have a bit more but comperable amount of *quality* and *preferred* length individuals (57,18 respectivley) than **2013** (41,16), **2015** (38,15), and **2016** (44,11). So, lets explore wether the differences are in the smaller sub stock length not fully sampled by our gear.
   
-  
-```{r Load Data Stock,, echo=FALSE, results="hide", tidy=TRUE}
-=======
-### Summary of Results 2013 - 2016 ###
-
-  The results of the Kolmogorov-Smirnov test above seem to suggest the largemouth bass population is not stable (*Or is it? I think there are just a few weird years probably sampling related*). The length frequency distribution **is significant different** between the years 2013 and 2014 (D = 0.24, P = 0.008), 2014 and 2016 (D = 0.25, P = 0.003), and 2015 and 2016 (D = 0.24, P = 0.023). There is **no significant difference** between the length frequency distributions for 2013 and 2015 (D = 0.20, P = 0.148), 2013 and 2016 (D = 0.10, P = 0.576), and 2014 and 2015 (D = 0.19, P = 0.148).
-  
-  
-|     Year    |    D    |    p-value   | Relationship |
-|:-----------:|:-------:|:------------:|:------------:|
-| 2013 - 2014 |   0.24  |     0.008    |      D       |
-| 2013 - 2015 |   0.20  |     0.148    |      S       |
-| 2013 - 2016 |   0.10  |     0.576    |      S       |
-| 2014 - 2015 |   0.19  |     0.148    |      S       |
-| 2014 - 2016 |   0.25  |     0.003    |      D       |
-| 2015 - 2016 |   0.24  |     0.023    |      D       |
-
-\newpage
-
-## Length Frequency 2013 - 2016 Stock Length (>= 200mm)
-
-  *What is I remove small fish (<200mm) which I am not sure are fully sampled by my gear. Will 2014 still be different from 2013 and 2016? will 2015?*
-
-  
-| Year | n Sub-Stock |  n Stock  |  n Quality  |  n Preferred  |
-|:----:|:-----------:|:---------:|:-----------:|:-------------:|
-| 2013 |     16      |    41     |    41       |      16       |
-| 2014 |      3      |    65     |    57       |      18       |
-| 2015 |     13      |    14     |    38       |      15       |
-| 2016 |     24      |    52     |    44       |      11       |
-
-  
-  **2014** has a lot of *stock* length individuals ($n_{stock} = 65$) compared to **2013** ($n_{stock} = 41$), **2015** ($n_{stock} = 14$), and **2016** ($n_{stock} = 52$) but far fewer *substock* individuals ($n_{sun-stock} = 3$), **2013** ($n_{sun-stock} = 16$), **2015** ($n_{sun-stock} = 13$), **2016** ($n_{sun-stock} = 24$). **2014** also seems to have a bit more but comperable amount of *quality* and *preferred* length individuals (57,18 respectivley) than **2013** (41,16), **2015** (38,15), and **2016** (44,11). So, lets explore wether the differences are in the smaller sub stock length not fully sampled by our gear.
-  
 ```{r Load Data Stock, tidy=TRUE}
->>>>>>> 344e87b6526b94ae2c0b7c715992fc0a3180d981
 lmb.s <- read.csv("Data/Clean-Data/2012-2016_nearshore-survey-largemouth-bass_Stock_CLEAN.csv") %>%
   arrange(Year,FID,Length)
 lmb.s$fyr <- as.factor(lmb.s$fyr)
@@ -497,7 +412,6 @@ lmbs.15 <- filter(lmb.s,Year==2015)
 lmbs.16 <- filter(lmb.s,Year==2016)
 ```
 
-<<<<<<< HEAD
 
 ```{r Calc m and n for Stock Length Fish, echo=FALSE, results="hide"}
 stck.mn <- function(a,b){
@@ -542,11 +456,11 @@ for(i in 1:length(df.stck$tmp.s)){
 \newpage
 
 ### Length Frequency Distribution of Stock Length Fish During 2013 - 2016 ###
-=======
+
 \newpage
 
 ### Length Frequency Distribution of Stock only fish 2013 - 2016 ###
->>>>>>> 344e87b6526b94ae2c0b7c715992fc0a3180d981
+
 
 ```{r length frequency tables Stock, tidy=TRUE, include=FALSE}
 ### 2013
@@ -728,7 +642,6 @@ summary(ksb.15.16s)
 (yrs <- c("13-14","13-15","13-16","14-15","14-16","15-16"))
 ```
 ```{r Lets look at results from the K-S test Stock, echo=FALSE, results="hide"}
-<<<<<<< HEAD
 (p.yr.s <- data.frame(Years = yrs,
                       D = round(D.s,5),
                       D.at.0.05 = round(df.stck2[,3],5),
@@ -954,222 +867,3 @@ summary(ksb.16.17)
 | 2015 - 2017 |   0.14  |     1.000    |      S       |
 | 2016 - 2017 |   0.17  |     1.000    |      S       |
 
-=======
-(p.yr.s <- data.frame(yrs,D.s,p.val.s))
-```
-
-### Summary of Results 2013 - 2016 Stock Length Fish Only ###
-
-  The results of the Kolmogorov-Smirnov test above seem to suggest the largemouth bass population is not stable (*Or is it? I think there are just a few weird years probably sampling related*). The length frequency distribution **is significant different** between the years 2014 and 2015 (D = 0.27, p = 0.017), and 2015 and 2016 (D = 0.28, p = 0.018). There is **no significant difference** between the length frequency distributions for 2013 and 2014 (D = 0.15, p = 0.464), 2013 and 2015 (D = 0.25, P = 0.064), 2013 and 2016 (D = 0.09, P = 0.977), and 2014 and 2016 (D = 0.11, P = 0.977).
-  
-  
-|     Year    |    D    |    p-value   | Relationship |
-|:-----------:|:-------:|:------------:|:------------:|
-| 2013 - 2014 |   0.15  |     0.464    |      S       |
-| 2013 - 2015 |   0.25  |     0.064    |      S       |
-| 2013 - 2016 |   0.09  |     0.977    |      S       |
-| 2014 - 2015 |   0.27  |     0.017    |      D       |
-| 2014 - 2016 |   0.11  |     0.977    |      S       |
-| 2015 - 2016 |   0.28  |     0.018    |      D       |
-
-
-  
-## 2013 - 2017 Length Frequency
-
-#### Cumulative Frequencies 2013 - 2017 ####
-
-  Lets look at the empirical cumulative distribution function (ECDF). This is the proportion of fish less than each observed length. This should help me compare the length frequency distributions between years.
-
-
-```{r ECDF 2013 - 2017, cache=TRUE, tidy=TRUE, echo=FALSE}
-par(mfrow=c(1,1)) ### reset to default
-
-### 2013
-plot(ecdf(lmb.13$Length),
-     xlab="Total Length (mm)",
-     do.points=FALSE,
-     verticals=TRUE, 
-     main="",
-     col.01line = NULL, 
-     col="orange")
-### 2014
-plot(ecdf(lmb.14$Length),
-     xlab="Total Length (mm)", 
-     do.points=FALSE,
-     verticals=TRUE, 
-     main="", 
-     col.01line = NULL,
-     col="red",
-     add=T)
-### 2015
-plot(ecdf(lmb.15$Length),
-     xlab="Total Length (mm)", 
-     do.points=FALSE,
-     verticals=TRUE, 
-     main="", 
-     col.01line = NULL,
-     col="blue", add=T)
-### 2016
-plot(ecdf(lmb.16$Length),
-     xlab="Total Length (mm)",
-     do.points=FALSE,
-     verticals=TRUE, main="",
-     col.01line = NULL, 
-     col="green",
-     add=T)
-### 2017
-plot(ecdf(lmb.17$Length),
-     xlab="Total Length (mm)",
-     do.points=FALSE,
-     verticals=TRUE, main="",
-     col.01line = NULL, 
-     col="purple",
-     add=T)
-
-legend("bottomright", 
-       c("2013","2014","2015","2016","2017"),
-       col=c("orange","red","blue","green","purple"),
-       lty=1, bty="n", cex=0.75)
-```
-
-```{r Kolmogorov-Smirnov Test 2013 - 2017, cache=TRUE, tidy=TRUE, include=FALSE}
-### 2013 and 2014
-(ks.13.14 <- ks.test(lmb.13$Length,lmb.14$Length))
-# Warning message:
-# In ks.test(lmb.14$Length, lmb.15$Length) :
-#   p-value will be approximate in the presence of ties
-ksb.13.14 <- ks.boot(lmb.13$Length,lmb.14$Length,nboots = 5000)
-summary(ksb.13.14)
-
-### 2013 and 2015
-(ks.13.15 <- ks.test(lmb.13$Length,lmb.15$Length))
-# Warning message:
-# In ks.test(lmb.14$Length, lmb.15$Length) :
-#   p-value will be approximate in the presence of ties
-ksb.13.15 <- ks.boot(lmb.13$Length,lmb.15$Length,nboots = 5000)
-summary(ksb.13.15)
-
-### 2013 and 2016
-(ks.13.16 <- ks.test(lmb.13$Length,lmb.16$Length))
-# Warning message:
-# In ks.test(lmb.14$Length, lmb.15$Length) :
-#   p-value will be approximate in the presence of ties
-ksb.13.16 <- ks.boot(lmb.13$Length,lmb.16$Length,nboots = 5000)
-summary(ksb.13.16)
-
-### 2013 and 2017
-(ks.13.17 <- ks.test(lmb.13$Length,lmb.17$Length))
-# Warning message:
-# In ks.test(lmb.14$Length, lmb.15$Length) :
-#   p-value will be approximate in the presence of ties
-ksb.13.17 <- ks.boot(lmb.13$Length,lmb.17$Length,nboots = 5000)
-summary(ksb.13.17)
-
-### 2014 and 2015
-(ks.14.15 <- ks.test(lmb.14$Length,lmb.15$Length))
-# Warning message:
-# In ks.test(lmb.14$Length, lmb.15$Length) :
-#   p-value will be approximate in the presence of ties
-
-ksb.14.15 <- ks.boot(lmb.14$Length,lmb.15$Length,nboots = 5000)
-summary(ksb.14.15)
-
-### 2014 and 2016
-(ks.14.16 <- ks.test(lmb.14$Length,lmb.16$Length))
-# Warning message:
-# In ks.test(lmb.14$Length, lmb.15$Length) :
-#   p-value will be approximate in the presence of ties
-
-ksb.14.16 <- ks.boot(lmb.14$Length,lmb.16$Length,nboots = 5000)
-summary(ksb.14.16)
-
-### 2014 and 2017
-(ks.14.17 <- ks.test(lmb.14$Length,lmb.17$Length))
-# Warning message:
-# In ks.test(lmb.14$Length, lmb.15$Length) :
-#   p-value will be approximate in the presence of ties
-
-ksb.14.17 <- ks.boot(lmb.14$Length,lmb.17$Length,nboots = 5000)
-summary(ksb.14.17)
-
-### 2015 and 2016
-(ks.15.16 <- ks.test(lmb.15$Length,lmb.16$Length))
-# Warning message:
-# In ks.test(lmb.14$Length, lmb.15$Length) :
-#   p-value will be approximate in the presence of ties
-
-ksb.15.16 <- ks.boot(lmb.15$Length,lmb.16$Length,nboots = 5000)
-summary(ksb.15.16)
-
-### 2015 and 2017
-(ks.15.17 <- ks.test(lmb.15$Length,lmb.17$Length))
-# Warning message:
-# In ks.test(lmb.14$Length, lmb.17$Length) :
-#   p-value will be approximate in the presence of ties
-
-ksb.15.17 <- ks.boot(lmb.15$Length,lmb.17$Length,nboots = 5000)
-summary(ksb.15.17)
-
-### 2016 and 2017
-(ks.16.17 <- ks.test(lmb.16$Length,lmb.17$Length))
-# Warning message:
-# In ks.test(lmb.16$Length, lmb.17$Length) :
-#   p-value will be approximate in the presence of ties
-
-ksb.16.17 <- ks.boot(lmb.16$Length,lmb.17$Length,nboots = 5000)
-summary(ksb.16.17)
-
-### Adjusted p-values
-
-(ks.ps <- c(ks.test(lmb.13$Length,lmb.14$Length)$p.value,
-            ks.test(lmb.13$Length,lmb.15$Length)$p.value,
-            ks.test(lmb.13$Length,lmb.16$Length)$p.value,
-            ks.test(lmb.13$Length,lmb.17$Length)$p.value,
-            ks.test(lmb.14$Length,lmb.15$Length)$p.value,
-            ks.test(lmb.14$Length,lmb.16$Length)$p.value,
-            ks.test(lmb.14$Length,lmb.17$Length)$p.value,
-            ks.test(lmb.15$Length,lmb.16$Length)$p.value,
-            ks.test(lmb.15$Length,lmb.17$Length)$p.value,
-            ks.test(lmb.16$Length,lmb.17$Length)$p.value))
-(p.val <- p.adjust(ks.ps))
-```
-```{r Make Adjuster p-values a little easier to read 2013 - 2017, cache=TRUE, tidy=TRUE, echo = FALSE, results="hide"}
-(D <- c(ks.13.14$statistic[[1]], 
-        ks.13.15$statistic[[1]],
-        ks.13.16$statistic[[1]],
-        ks.13.17$statistic[[1]],
-        ks.14.15$statistic[[1]], 
-        ks.14.16$statistic[[1]],
-        ks.14.17$statistic[[1]],
-        ks.15.16$statistic[[1]],
-        ks.15.17$statistic[[1]],
-        ks.16.17$statistic[[1]]))
-(yrs <- c("13-14","13-15","13-16","13-17","14-15","14-16","14-17","15-16","15-17","16-17"))
-```
-```{r Lets look at results from the K-S test 2013 - 2017, echo=FALSE, results="hide"}
-(p.yr <- data.frame(yrs,D,p.val))
-```
-
-### Summary of Results 2013 - 2017 ###
-
-  The results of the Kolmogorov-Smirnov test above seem to suggest the largemouth bass population is not stable (*Or is it? I think there are just a few weird years probably sampling related*). The length frequency distribution **is significant different** between the years 2013 and 2014 (D = 0.24, P = 0.014), 2014 and 2016 (D = 0.25, P < 0.005), and 2015 and 2016 (D = 0.24, P = 0.046). There is **no significant differnce** between the length frequency distributions for 2013 and 2015 (D = 0.20, P = 0.344), 2013 and 2016 (D = 0.10, P = 1), and 2014 and 2015 (D = 0.19, P = 0.344). The length frequency distribution for the year 2017 was *not significantly different* between any years. 
-
-**Note:**
-*Adding in the Year 2017 Significantly Altered the Adjusted P-Values*
-
-  
-|     Year    |    D    |    p-value   | Relationship |
-|:-----------:|:-------:|:------------:|:------------:|
-| 2013 - 2014 |   0.24  |     0.014    |      D       |
-| 2013 - 2015 |   0.20  |     0.344    |      S       |
-| 2013 - 2016 |   0.10  |     1.000    |      S       |
-| 2013 - 2017 |   0.14  |     1.000    |      S       |
-| 2014 - 2015 |   0.19  |     0.344    |      S       |
-| 2014 - 2016 |   0.25  |     0.005    |      D       |
-| 2014 - 2017 |   0.20  |     0.686    |      S       |
-| 2015 - 2016 |   0.24  |     0.046    |      D       |
-| 2015 - 2017 |   0.14  |     1.000    |      S       |
-| 2016 - 2017 |   0.17  |     1.000    |      S       |
-
->>>>>>> 344e87b6526b94ae2c0b7c715992fc0a3180d981
-  
