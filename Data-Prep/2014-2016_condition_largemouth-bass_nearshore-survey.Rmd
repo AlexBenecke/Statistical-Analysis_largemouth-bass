@@ -25,12 +25,14 @@ library(Matching)
 ```
 
 ```{r Load Data, results='hide'}
-Stock <- read.csv("Data/Clean-Data/2012-2017_nearshore-survey-largemouth-bass_Stock_CLEAN.csv") %>% 
-  filter(fyr>=2014) %>%
-  filter(!is.na(Wr)) %>%
+#Stock <- read.csv("Data/Clean-Data/2012-2017_nearshore-survey-largemouth-bass_Stock_CLEAN.csv") %>% 
+Stock <- read.csv("Data/Clean-Data/lmb-cpe.csv") %>% 
+  filter(Length>=200) %>%
   arrange(Year,gcat)
 
-Stock$fyr <- as.factor(Stock$fyr)
+
+Stock$fyr <- factor(Stock$fyr)
+Stock$Year <- factor(Stock$Year)
 
 headtail(Stock)
 ```
@@ -48,8 +50,8 @@ unique(Stock$fyr)
 ### Summarize Relative Weight by Year
 
 ```{r Summarizing Wr Data for 2012,2014,2015,2016, tidy=TRUE}
-(Wr.Stock <- Summarize(Wr~fyr,data = Stock) %>%
-  arrange(fyr))
+(Wr.Stock <- Summarize(Wr~Year,data = Stock) %>%
+  arrange(Year))
 ```
 
   I have created a file with the relative weight of each gabelhouse length category for each year. The file name is relative-weight_largemouth-bass_STOCK.csv.
@@ -70,41 +72,47 @@ Lets start exploring the relative weight data. I have two questions I would like
 **First** Lets see if Wr is different between years. 
 
 ```{r Anova Wr Year, tidy=TRUE}
-aov1 <- lm(Wr~fyr,data=Stock)
+aov1 <- lm(Wr~Year,data=Stock)
 #save(aov1,file = "model-output/aov1.rda")
 Anova(aov1)
 
-mc1 <- glht(aov1,mcp(fyr="Tukey"))
+mc1 <- glht(aov1,mcp(Year="Tukey"))
 summary(mc1)
 ```
 
 
-  Looks like Wr *is significantly different* between years (One-Way ANOVA, $F_{3, 345}$ = 7.17, p < 0.001). There is *no significant difference* in relative weight between 2015 and 2014 (Tukey HSD, t = 0.085, p = 1), 2016 and 2014 (Tukey HSD, t = 2.56, p = 0.06), 2016 and 2015 (Tukey HSD, t = 2.00, p = 0.18), and 2016 and 2017 (Tukey HSD, t = 2.37, p = 0.08). However, relative weight *is significantly different* between 2017 and 2014 (Tukey HSD, t = 4.16, p < 0.001), and 2017 and 2015 (Tukey HSD, t = 3.71, p = 0.001).
+  Looks like Wr *is significantly different* between years (One-Way ANOVA, $F_{3, 400}$ = 4.72, p = 0.00299). There is *no significant difference* in relative weight between 
+  2013 and 2015 (Tukey HSD, t = -2.30, p = 0.0985),
+  2013 and 2016 (Tukey HSD, t = -0.08, p = 0.9998), 
+  2015 and 2014 (Tukey HSD, t = 0.095, p = 0.9997), and 
+  2015 and 2016 (Tukey HSD, t = 2.31, p = 0.0977). However, relative weight *is significantly different* between 
+  2014 and 2013 (Tukey HSD, t = -2.86, p = 0.0229), and 
+  2014 and 2016 (Tukey HSD, t = 2.90, p = 0.0199).
 
 
 ### constructing a plot of Wr and Year
 
 ```{r Create Results to be plotted, tidy=TRUE}
-grps.1 <- c("2014", "2015", "2016", "2017")
-nd.1 <- data.frame(fyr=factor(grps.1,levels = grps.1))
+grps.1 <- c("2013", "2014", "2015", "2016")
+nd.1 <- data.frame(Year=factor(grps.1,levels = grps.1))
 (pred.1 <- predict(aov1,nd.1,interval = "confidence"))
 
 ```
 
 ```{r Plot Wr by Year, tidy=TRUE}
-plotCI(as.numeric(nd.1$fyr), pred.1[,"fit"],
+plotCI(as.numeric(nd.1$Year), pred.1[,"fit"],
        li = pred.1[,"lwr"], ui = pred.1[,"upr"],
        pch=19, xaxt = "n", 
        xlim = c(0.8, 4.2), ylim = c(65,135),
        xlab = "Year", ylab = "Mean Wr")
 
-lines(nd.1$fyr, pred.1[,"fit"],col="gray50")
+lines(nd.1$Year, pred.1[,"fit"],col="gray50")
 
-axis(1,at=nd.1$fyr, labels = nd.1$fyr)
+axis(1,at=nd.1$Year, labels = nd.1$Year)
 
 cld(mc1)
 
-text(x=nd.1$fyr, y=pred.1[,"upr"], labels = c("a", "a", "ab", "b"), pos=3)
+text(x=nd.1$Year, y=pred.1[,"upr"], labels = c("b", "a", "ab", "b"), pos=3)
 
 abline(h=100,lty=4,col="green")
 ```
@@ -115,18 +123,18 @@ residPlot(aov1)
 leveneTest(aov1)
 ```
 
-  This seems to suggest that the data violates the assumption that errors are normally distributed ($F_{3,345}$ = 9.97, p < 0.001). 
+  Variance are equal and the homoscedasticity assumption is likley met (Levene's Test, $F_{3, 400}$ = 0.9702, p = 0.4067). 
 
   **Without 2017** *Variance are equal and the homoscedasticity assumption is likley met (Levene's Test, $F_{2, 311}$ = 1.75, p = 0.18).*
 
 
 ```{r real quick make Wr.csv from pred, tidy=TRUE}
-Year <- c("2014", "2015", "2016", "2017")
+Year <- c("2013", "2014", "2015", "2016")
 pred.1 <- data.frame(Year,pred.1)
 names(pred.1) <- c("Year", "Wr", "LCI", "UCI")
 str(pred.1)
 head(pred.1)
-#1-10-2018#write.csv(pred.1,file = "Data/Clean-Data/relative-weight_largemouth-bass_STOCK.csv")
+#1-30-2018#write.csv(pred.1,file = "Data/Clean-Data/relative-weight_largemouth-bass_STOCK.csv",row.names = FALSE)
 ```
 
 ### Kruskal-Wallis Test

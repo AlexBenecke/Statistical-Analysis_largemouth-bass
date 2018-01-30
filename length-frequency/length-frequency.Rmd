@@ -25,9 +25,11 @@ library(Matching)
 
 
 ```{r Load Data 2013 - 2017, tidy=TRUE}
-lmb <- read.csv("Data/Clean-Data/2012-2017_nearshore-survey-largemouth-bass_CLEAN.csv") %>%
+#lmb <- read.csv("Data/Clean-Data/2012-2017_nearshore-survey-largemouth-bass_CLEAN.csv") %>%
+lmb <- read.csv("Data/Clean-Data/lmb-cpe.csv") %>%
   arrange(Year,FID,Length) %>%
-  filterD(!is.na(Length))
+  filter(Length>=200)
+  
 lmb$fyr <- as.factor(lmb$fyr)
 ```
 ```{r View Data 2013 - 2017, include=FALSE}
@@ -40,7 +42,7 @@ unique(lmb$Year) ### See that there is no 2013
 
   Lets create a new variable for 20 mm length bins.
 
-```{r lcat20 2013 - 2017, tidy=TRUE}
+```{ lcat20 2013 - 2017, tidy=TRUE}
 lmb %<>% mutate(lcat20=lencat(Length,w=20))
 ```
 ```{r View Length Bins 2013 - 2017, include=FALSE}
@@ -51,7 +53,7 @@ headtail(lmb)
 
 
 ```{r Separate Data by Year 2013 - 2017, tidy=TRUE}
-lmb.12 <- filter(lmb,Year==2012)
+#lmb.12 <- filter(lmb,Year==2012)
 #1-8-2018#write.csv(lmb.12, file = "Data/Clean-Data/minor-data/lmb.12.csv")
 lmb.13 <- filter(lmb,Year==2013)
 #1-8-2018#write.csv(lmb.13, file = "Data/Clean-Data/minor-data/lmb.13.csv")
@@ -61,7 +63,7 @@ lmb.15 <- filter(lmb,Year==2015)
 #1-8-2018#write.csv(lmb.15, file = "Data/Clean-Data/minor-data/lmb.15.csv")
 lmb.16 <- filter(lmb,Year==2016)
 #1-8-2018#write.csv(lmb.16, file = "Data/Clean-Data/minor-data/lmb.16.csv")
-lmb.17 <- filter(lmb,Year==2017)
+#lmb.17 <- filter(lmb,Year==2017)
 #1-8-2018#write.csv(lmb.17, file = "Data/Clean-Data/minor-data/lmb.17.csv")
 ```
 \newpage
@@ -87,52 +89,64 @@ prop.table(Freq15.20)*100
 prop.table(Freq16.20)*100
 
 ### 2017
-(Freq17.20 <- xtabs(~lcat20,data=lmb.17))
-prop.table(Freq17.20)*100
+#(Freq17.20 <- xtabs(~lcat20,data=lmb.17))
+#prop.table(Freq17.20)*100
 ```
 
   Lets view a quick histogram of the frequency of fish in each length bin.
 
 
-```{r Hist of Length Freq 2013 - 2016, cache=TRUE, tidy=TRUE, echo=FALSE}
+```{r Hist of Length Freq 2013 - 2016, tidy=FALSE, echo=FALSE}
 par(mfrow=c(5,1)) ### arrange graphs 1 column 4 rows
 par(mfrow=c(2,2))
 par(mfrow=c(1,1)) ### reset to default
 
 ### 2013
 hist(~Length,data=lmb.13,
+     freq =FALSE,
      breaks = seq(0,500,20),
-     ylim=c(0,30),
+     ylim=c(0,0.011),
+     xlim=c(180,500),
      main="2013",
-     xlab="Total Length (mm)")
+     xlab="Total Length (mm)",
+     ylab = "Relative Frequency (%)")
 
 ### 2014
 hist(~Length,data=lmb.14,
      breaks = seq(0,500,20),
-     ylim=c(0,30),
+     ylim=c(0,0.011),
+     xlim=c(180,500),
+     freq =FALSE,
      main="2014",
-     xlab="Total Length (mm)")
+     xlab="Total Length (mm)",
+     ylab = "Relative Frequency (%)")
 
 ### 2015
 hist(~Length,data=lmb.15,
      breaks = seq(0,500,20),
-     ylim=c(0,30),
+     ylim=c(0,0.011),
+     xlim=c(180,500),
+     freq =FALSE,
      main="2015",
-     xlab="Total Length (mm)")
+     xlab="Total Length (mm)",
+     ylab = "Relative Frequency (%)")
 
 ### 2016
 hist(~Length,data=lmb.16,
      breaks = seq(0,500,20),
-     ylim=c(0,30),
+     ylim=c(0,0.011),
+     xlim=c(180,500),
+     freq =FALSE,
      main="2016",
-     xlab="Total Length (mm)")
+     xlab="Total Length (mm)",
+     ylab = "Relative Frequency (%)")
 
 ### 2017
-hist(~Length,data=lmb.17,
-     breaks = seq(0,500,20),
-     ylim=c(0,30),
-     main="2017",
-     xlab="Total Length (mm)")
+#hist(~Length,data=lmb.17,
+#     breaks = seq(0,500,20),
+#     ylim=c(0,30),
+#     main="2017",
+#     xlab="Total Length (mm)")
 ```
 
   I can tell that small fish (<100-250mm) are definitely not being sampled consistently. **2014** and **2016** look more or less as I would expect with a stable largemouth bass population (2014 more so than 2016) with a peak and more or less gradual decline in the number of fish with increasing length. The peak for **2015** appears to be shifted right (320mm) more so than for 2014 and 2016 (260mm). The year **2013** Appears to be more or less flat but it's highest peak is at (360mm) before declining. As for **2017** I think this represents inadequate sampling I see a peak with much smaller fish (100mm) than other years and some length bins with only 1 fish. the peak for 2017 is around 340mm.
