@@ -1,0 +1,247 @@
+---
+title: "Full Nearshore Data 2013 - 2017 (CPUE)"
+author: "Alex J. Benecke"
+date: "January 30, 2018"
+output: pdf_document
+header-includes:
+    - \setlength\parindent{24pt}
+    - \usepackage{indentfirst}
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(FSA)
+library(tidyverse)
+library(stringr)
+library(magrittr)
+```
+
+
+
+## All Nearshore Data with Effort
+
+  So I want to calculate CPUE for each site and year and species (Although I'm Mainly interested in largemouth bass Species code = 317). I went through the data sheets for 2013 and entered weights so I will also want to use this data file for the Wr analysis. I am excluding year 2017 because it was sampled with a different crew different gear and posibly different methods (Data looks like nothing I've seen in previous years so i just don't trust it). 
+  
+
+```{r Load Bio Data}
+bio1 <- read.csv("Data/Raw-Data/Nearshore-Biodat_2013-2017.csv")%>%
+  filterD(Year<2017)
+
+str(bio1)
+headtail(bio1)
+```
+```{r Load Effort Data}
+eff1 <- read.csv("Data/Raw-Data/Effort-Nearshore_2013-2017.csv") %>%
+  arrange(Year,Site) %>%
+  filterD(!is.na(STARTTIME)) %>%
+  filterD(Year<2017)
+```
+```{r Create effort variable sum by site and year}
+### create Effort variable (Seconds)
+eff1$effort.s <- eff1$ENDTIME-eff1$STARTTIME
+eff1$effort.min <- (eff1$ENDTIME-eff1$STARTTIME)/60
+eff1$effort.hr <- (eff1$effort.min)/60
+
+### Using efishing Hours
+eff <- eff1 %>% group_by(Year,Site) %>%
+  summarize(effort = sum(effort.hr))
+
+str(eff)
+headtail(eff)
+```
+
+**Note:**
+  
+  *There is no effort data for Sites 11 and 12 during 2013. I will need to throw out fish from sites 11 and 12 during 2013.* **This will remove 7 LMB from Site 11 in 2017.** *Also, there is no effort data for 2017*
+
+
+```{r Summarize number fish by species site and year}
+bio <- bio1 %>% group_by(Year,Site,Species) %>%
+  summarize(caught = sum(Count)) %>%
+  as.data.frame()
+
+### remove sites 11 and 12 from 2013
+unique(bio$Site[bio$Year==2013])
+
+(rm.site.11.2013 <- as.numeric(rownames(bio[bio$Year==2013 & bio$Site==11,])))
+
+(rm.site.12.2013 <- as.numeric(rownames(bio[bio$Year==2013 & bio$Site==12,])))
+
+(rm <- c(rm.site.11.2013, rm.site.12.2013))
+
+bio <- bio[-rm,] %>%
+  filterD(!is.na(Site))
+
+unique(bio$Site[bio$Year==2013])
+```
+
+```{r}
+headtail(bio)
+headtail(eff)
+```
+
+**Note:**
+
+  *It looks like I have effort data for site 19 from 2016 but no fish. Add Zeros* **Resolved 1-30-2018**
+
+```{r Check Sites are same for bio and eff every year, eval=FALSE,include=FALSE}
+(yr.13.bio <- unique(bio$Site[bio$Year==2013])) ### Site 19 missing in Bio
+(yr.13.eff <- unique(eff$Site[eff$Year==2013]))
+
+(yr.14.bio <- unique(bio$Site[bio$Year==2014]))
+(yr.14.eff <- unique(eff$Site[eff$Year==2014]))
+
+(yr.15.bio <- unique(bio$Site[bio$Year==2015]))
+(yr.15.eff <- unique(eff$Site[eff$Year==2015]))
+
+(yr.16.bio <- unique(bio$Site[bio$Year==2016])) ### Site 19 missing in Bio
+(yr.16.eff <- unique(eff$Site[eff$Year==2016]))
+```
+  
+  
+```{r Join eff and bio data}
+catch <- left_join(eff, bio,by=c("Year","Site")) %>%
+  as.data.frame()
+
+#catch$UID <- paste0(catch$Year,sep=".",catch$Site)
+
+headtail(catch)
+str(catch) # Needs to be data frame
+```
+
+```{r Add zeros for species not caught}
+catch %<>% addZeroCatch("Site","Species", zerovar = "caught") %>%
+  arrange(Year,Site)
+
+headtail(catch)
+```
+
+
+```{r Make CPUE variable Catch / hr efishing}
+catch %<>% mutate(cpe.hr = caught/effort)
+
+headtail(catch)
+
+#1-30-2018#write.csv(catch,"Data/Clean-Data/CPUE_2013-2016.csv",row.names = FALSE)
+```
+
+```{r Summarize CPUE}
+cpeSum <- catch %>% group_by(Year,Species) %>%
+  summarize(samples = n(), fish = sum(caught),
+            mean = mean(cpe.hr), sd = sd(cpe.hr),
+            se = sd/sqrt(samples), RSE = se/mean*100) %>%
+  as.data.frame()
+
+cpeSum
+#1-30-2018#write.csv(cpeSum,"Data/Clean-Data/cpeSum.csv",row.names = FALSE)
+```
+
+
+  So this is usefull but what I really want is just largemouth bass with lengths weights and effort.
+  
+```{r}
+headtail(bio1)
+headtail(eff1)
+
+bio2 <- bio1 %>%
+  select(Year,Site,Species,FID:Count)
+headtail(bio2)
+
+eff2 <- eff1 %>% group_by(Year,Site) %>%
+  summarize(effort = sum(effort.hr))
+
+
+headtail(eff2)
+```
+
+```{r}
+cpe <- left_join(eff2, bio2,by=c("Year","Site")) %>%
+  as.data.frame()
+
+headtail(cpe)
+str(cpe)
+```
+
+
+```{r Add zeros for species by site}
+cpe %<>% addZeroCatch("Site","Species", zerovar = "Count") %>%
+  arrange(Year,Site)
+headtail(cpe)
+```
+
+Now lets make some length bins. Themn some relative weight.
+
+
+  Lets create a new variable for 20 mm length bins.
+
+```{r lcat20 2013 - 2017, tidy=TRUE}
+cpe %<>% mutate(lcat20=lencat(Length,w=20))
+cpe %<>% mutate(lcat10=lencat(Length,w=10))
+```
+
+```{r View Length Bins 2013 - 2017, include=FALSE}
+headtail(cpe)
+str(cpe)
+#1-30-2018#write.csv(cpe,"Data/Clean-Data/All-CPE.csv",row.names = FALSE)
+```
+
+
+```{r Seperate out LMB}
+lmb.cpe1 <- cpe[cpe$Species == 317,] %>%
+  select(Year:lcat20) %>%
+  arrange(Year,Site,FID,Length)
+
+str(lmb.cpe1)
+headtail(lmb.cpe1)
+#1-30-2018#write.csv(lmb.cpe1,"Data/Clean-Data/lmb-cpe1.csv",row.names = FALSE)
+lmb.cpe1 <- read.csv("Data/Clean-Data/lmb-cpe1.csv")
+```
+
+```{r making variable for gabelhouse length category}
+### creating size breaks for Gabelhouse Length categories for Largemouth Bass
+(lmb.cuts2 <- psdVal("Largemouth Bass"))
+
+### adding gcat variable to data frame
+lmb.cpe <- lmb.cpe1 %>%
+  mutate(gcat=lencat(Length, breaks = lmb.cuts2,
+                     use.names = TRUE, drop.levels = TRUE))  ### create Gabelhouse Length Categories
+
+headtail(lmb.cpe)  
+```
+
+```{r Getting Standard Weight values from literature (FSA Package)}
+(wsLMB <- wsVal("Largemouth Bass", simplify = TRUE))
+(wsLMB_min <- wsLMB[["min.TL"]])
+(wsLMB_int <- wsLMB[["int"]])
+(wsLMB_slp <- wsLMB[["slope"]])
+```
+```{r}
+lmb.cpe %<>% mutate(logW=log10(Weight),logL=log10(Length))
+```
+
+
+```{r Calculating Standard and Relative Weight}
+lmb.cpe %<>% mutate(Ws = 10^(wsLMB_int+wsLMB_slp*logL),
+                 Wr=(Weight/Ws)*100)
+headtail(lmb.cpe)
+headtail(lmb.cpe[lmb.cpe$Year==2013,]) ### Now I have Wr for 2013
+```
+
+
+
+```{r Make lmb.cpe.csv}
+#1-30-2018#write.csv(lmb.cpe,"Data/Clean-Data/lmb-cpe.csv",row.names = FALSE)
+```
+
+
+
+
+
+
+
+
+
+

@@ -76,3 +76,138 @@ LMBL$BI.len <- with(LMBL,LenCap+(Radi-RadCap)*(LenCap-3.9)*(RadCap-0.035)^-1)
 
   I have commented out the final write.csv command because I do not want to accidently remake my data file.
 
+
+## All Nearshore Data with Effort
+
+```{r}
+bio1 <- read.csv("Data/Raw-Data/Nearshore-Biodat_2013-2017.csv")%>%
+  filterD(Year<2017)
+
+str(bio1)
+```
+```{r Load Effort Data}
+eff1 <- read.csv("Data/Raw-Data/Effort-Nearshore_2013-2017.csv") %>%
+  arrange(Year,Site) %>%
+  filterD(!is.na(STARTTIME)) %>%
+  filterD(Year<2017)
+```
+```{r Create effort variable sum by site and year}
+### create Effort variable (Seconds)
+eff1$effort.s <- eff1$ENDTIME-eff1$STARTTIME
+eff1$effort.min <- (eff1$ENDTIME-eff1$STARTTIME)/60
+eff1$effort.hr <- (eff1$effort.min)/60
+
+eff <- eff1 %>% group_by(Year,Site) %>%
+  summarize(effort = sum(effort.hr))
+
+str(eff)
+headtail(eff)
+```
+
+**Note:**
+  
+  *There is no effort data for Sites 11 and 12 during 2013. I will need to throw out fish from sites 11 and 12 during 2013. Also, there is no effort data for 2017*
+
+
+```{r Summarize number fish by species site and year}
+bio <- bio1 %>% group_by(Year,Site,Species) %>%
+  summarize(catch=n()) %>%
+  as.data.frame()
+
+### remove sites 11 and 12 from 2013
+unique(bio$Site[bio$Year==2013])
+
+(rm.site.11.2013 <- as.numeric(rownames(bio[bio$Year==2013 & bio$Site==11,])))
+
+(rm.site.12.2013 <- as.numeric(rownames(bio[bio$Year==2013 & bio$Site==12,])))
+
+(rm <- c(rm.site.11.2013, rm.site.12.2013))
+
+bio <- bio[-rm,] %>%
+  filterD(!is.na(Site))
+
+unique(bio$Site[bio$Year==2013])
+```
+
+```{r}
+headtail(bio)
+headtail(eff)
+```
+
+**Note:**
+
+  *It looks like I have effort data for site 19 from 2016 but no fish. Add Zeros*
+
+```{r}
+(yr.13.bio <- unique(bio$Site[bio$Year==2013])) ### Site 19 missing in Bio
+(yr.13.eff <- unique(eff$Site[eff$Year==2013]))
+
+(yr.14.bio <- unique(bio$Site[bio$Year==2014]))
+(yr.14.eff <- unique(eff$Site[eff$Year==2014]))
+
+(yr.15.bio <- unique(bio$Site[bio$Year==2015]))
+(yr.15.eff <- unique(eff$Site[eff$Year==2015]))
+
+(yr.16.bio <- unique(bio$Site[bio$Year==2016])) ### Site 19 missing in Bio
+(yr.16.eff <- unique(eff$Site[eff$Year==2016]))
+```
+  
+  
+  
+```{r}
+catch <- left_join(eff,bio,by=c("Year","Site"))
+
+#catch$UID <- paste0(catch$Year,sep=".",catch$Site)
+
+headtail(catch)
+```
+
+```{r}
+catch %<>% addZeroCatch("Site","Species", zerovar = "catch") %>%
+  arrange(Year,Site)
+
+headtail(catch)
+```
+
+
+
+
+
+
+
+```{r Summarize number fish by species site and year}
+tmp <- bio %>% group_by(Year,Site,Species) %>%
+  summarize(catch=n()) %>%
+  as.data.frame()
+
+headtail(tmp)
+
+### summaries for length for species site and year
+tmp <- bio %>% group_by(Year,Site,Species) %>%
+  summarize(n = n(), val.n = validn(Length),
+            mean = round(mean(Length,na.rm = TRUE),1),
+            sd = round(sd(Length,na.rm = TRUE),2),
+            min = min(Length,na.rm = TRUE),
+            mdn = quantile(Length, 0.5, na.rm = TRUE),
+            max = max(Length,na.rm = TRUE)) %>%
+  as.data.frame()
+
+headtail(tmp)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
