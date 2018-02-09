@@ -25,6 +25,9 @@ library(magrittr)
 
   So I want to calculate CPUE for each site and year and species (Although I'm Mainly interested in largemouth bass Species code = 317). I went through the data sheets for 2013 and entered weights so I will also want to use this data file for the Wr analysis. I am excluding year 2017 because it was sampled with a different crew different gear and posibly different methods (Data looks like nothing I've seen in previous years so i just don't trust it). 
   
+  catch %<>% addZeroCatch("Site","Species", zerovar = "caught") %>%
+  arrange(Year,Site)
+  
 
 ```{r Load Bio Data}
 bio1 <- read.csv("Data/Raw-Data/Nearshore-Biodat_2013-2017.csv")%>%
@@ -55,7 +58,20 @@ headtail(eff)
 
 **Note:**
   
-  *There is no effort data for Sites 11 and 12 during 2013. I will need to throw out fish from sites 11 and 12 during 2013.* **This will remove 7 LMB from Site 11 in 2017.** *Also, there is no effort data for 2017*
+  *There is no effort data for Sites 11 and 12 during 2013.*
+```{r show no effort from sites 11 and 12 during 2013}
+(Note1 <- eff[eff$Year==2013,] %>%
+  as.data.frame());print("2013 Sites");unique(Note1$Site);print("Sites 11 & 12 are Missing")
+```
+  *I will need to throw out fish from sites 11 and 12 during 2013.* 
+```{r Show fish from sites 11 and 12 during 2013 to be removed}
+Note2 <- bio1[bio1$Year==2013 & bio1$Species==317,] %>%
+   as.data.frame()
+(Note2 <- Note2[Note2$Site == 11 | Note2$Site == 12,])[,c(4:7,11)]
+print("No largemouth bass from site 12")
+print("Number of largemouth bass in site 11");nrow(Note2)
+```
+  **This will remove 7 LMB from Site 11 in 2013.** *Also, there is no effort data for 2017*
 
 
 ```{r Summarize number fish by species site and year}
@@ -85,7 +101,7 @@ headtail(eff)
 
 **Note:**
 
-  *It looks like I have effort data for site 19 from 2016 but no fish. Add Zeros* **Resolved 1-30-2018**
+  *It looks like I have effort data for site 19 from 2016 and 2013 but no fish. It must be that only non sport fish were caugth at site 19 so there is no length data. Add Zeros later in document.* 
 
 ```{r Check Sites are same for bio and eff every year, eval=FALSE,include=FALSE}
 (yr.13.bio <- unique(bio$Site[bio$Year==2013])) ### Site 19 missing in Bio
@@ -116,7 +132,7 @@ str(catch) # Needs to be data frame
 catch %<>% addZeroCatch("Site","Species", zerovar = "caught") %>%
   arrange(Year,Site)
 
-headtail(catch)
+headtail(catch) ### Here are the zeroes for site 19 2013 and 2016 problem resolved
 ```
 
 
@@ -125,7 +141,7 @@ catch %<>% mutate(cpe.hr = caught/effort)
 
 headtail(catch)
 
-#1-30-2018#write.csv(catch,"Data/Clean-Data/CPUE_2013-2016.csv",row.names = FALSE)
+#2-7-2018#write.csv(catch,"Data/Clean-Data/CPUE_2013-2016.csv",row.names = FALSE)
 ```
 
 ```{r Summarize CPUE}
@@ -136,29 +152,140 @@ cpeSum <- catch %>% group_by(Year,Species) %>%
   as.data.frame()
 
 cpeSum
-#1-30-2018#write.csv(cpeSum,"Data/Clean-Data/cpeSum.csv",row.names = FALSE)
+#2-7-2018#write.csv(cpeSum,"Data/Clean-Data/summary-data/cpeSum.csv",row.names = FALSE)
 ```
 
 
   So this is usefull but what I really want is just largemouth bass with lengths weights and effort.
   
-```{r}
+  
+  
+```{r Remove sites 11 and 12 from 2013 for bio2}
 headtail(bio1)
-headtail(eff1)
 
-bio2 <- bio1 %>%
-  select(Year,Site,Species,FID:Count)
+bio2 <- bio1
+
+bio2$Sp.Name <- numeric(nrow(bio2))
 headtail(bio2)
 
-eff2 <- eff1 %>% group_by(Year,Site) %>%
-  summarize(effort = sum(effort.hr))
+for(i in 1:nrow(bio2)){
+  if(bio2$Species[i] == 41){
+  bio2$Sp.Name[i] = "Longnose Gar"
+} else if(bio2$Species[i] == 171){
+  bio2$Sp.Name[i] = "Shorthead Redhorse"
+} else if(bio2$Species[i] == 201){
+  bio2$Sp.Name[i] = "Spottail Shiner"
+} else if(bio2$Species[i] == 203){
+  bio2$Sp.Name[i] = "Spotfin Shiner"
+} else if(bio2$Species[i] == 301){
+  bio2$Sp.Name[i] = "White Perch"
+} else if(bio2$Species[i] == 302){
+  bio2$Sp.Name[i] = "White Bass"
+} else if(bio2$Species[i] == 311){
+  bio2$Sp.Name[i] = "Rock Bass"
+} else if(bio2$Species[i] == 312){
+  bio2$Sp.Name[i] = "Green Sunfish"
+} else if(bio2$Species[i] == 313){
+  bio2$Sp.Name[i] = "Pumpkinseed"
+} else if(bio2$Species[i] == 314){
+  bio2$Sp.Name[i] = "Bluegill"
+} else if(bio2$Species[i] == 316){
+  bio2$Sp.Name[i] = "Smallmouth Bass"
+} else if(bio2$Species[i] == 317){
+  bio2$Sp.Name[i] = "Largemouth Bass"
+} else if(bio2$Species[i] == 319){
+  bio2$Sp.Name[i] = "Black Crappie"
+} else if(bio2$Species[i] == 324){
+  bio2$Sp.Name[i] = "Orangespotted Sunfish"
+} else if(bio2$Species[i] == 331){
+  bio2$Sp.Name[i] = "Yellow Perch"
+} else if(bio2$Species[i] == 334){
+  bio2$Sp.Name[i] = "Walleye"
+} else if(bio2$Species[i] == 342){
+  bio2$Sp.Name[i] = "Logperch"
+} else if(bio2$Species[i] == 702){
+  bio2$Sp.Name[i] = "Pumpkinseed Bluegill Hybrid"
+} else{
+  bio2$Sp.Name[i] = "Green Sunfish Bluegill Hybrid"
+}
+}
 
 
-headtail(eff2)
+bio2 %<>% mutate(lcat20 = lencat(Length, w = 20)) %>%
+  mutate(lcat10 = lencat(Length, w = 10)) %>%
+  mutate(gcat = psdAdd(Length, Sp.Name))
+
+gcat.bio <- bio2 %>% group_by(Year, Site, Species, gcat) %>%
+  summarize(caught = sum(Count)) %>%
+  as.data.frame()
+
+headtail(gcat.bio) # nrow = 4788
+str(gcat.bio)
+
+unique(gcat.bio$Species)
+
+(tmp <- gcat.bio[gcat.bio$Year==2016 & gcat.bio$Site==18,] %>% arrange(Site,Species))
+
+unique(tmp$Species)
+
+
 ```
 
+
+**Note:**
+  *No Gabelhouse length category data for Green Sunfish Bluegill Hybrid, Logperch, Orangespotted Sunfish, Pumpkinsee Bluegill Hybrid, Spotfin Shiner, Spottail Shiner. This seems obvious but is good to take note of. Im going to go back and remove those species*
+
 ```{r}
-cpe <- left_join(eff2, bio2,by=c("Year","Site")) %>%
+### remove sites 11 and 12 from 2013
+unique(gcat.bio$Site[gcat.bio$Year==2013])
+
+(rm2.site.11.2013 <- as.numeric(rownames(gcat.bio[gcat.bio$Year==2013 & gcat.bio$Site==11,])))
+
+(rm2.site.12.2013 <- as.numeric(rownames(gcat.bio[gcat.bio$Year==2013 & gcat.bio$Site==12,])))
+
+(rm2 <- c(rm2.site.11.2013, rm2.site.12.2013))
+
+print("Rows to remove n =");length(rm2)
+
+gcat.bio <- gcat.bio[-rm2,] %>%
+  filterD(!is.na(Site))
+
+unique(gcat.bio$Site[gcat.bio$Year==2013])
+
+### Remove Sp without Gcat data
+(sp.list <- unique(gcat.bio$Species) %>% sort())
+
+(rm.sp <- c(as.numeric(row.names(gcat.bio[gcat.bio$Species==705,])),
+                     as.numeric(row.names(gcat.bio[gcat.bio$Species==702,])),
+                     as.numeric(row.names(gcat.bio[gcat.bio$Species==342,])),
+                     as.numeric(row.names(gcat.bio[gcat.bio$Species==324,])),
+                     as.numeric(row.names(gcat.bio[gcat.bio$Species==203,])),
+                     as.numeric(row.names(gcat.bio[gcat.bio$Species==201,]))))
+
+gcat.bio[rm.sp,c(2,3)]
+
+unique(gcat.bio$Species[rm.sp])
+
+print("Rows to remove n =");length(rm.sp)
+
+print("Total rows to remove");length(rm2)+length(rm.sp)
+
+
+gcat.bio <- gcat.bio[-rm.sp,] %>%
+  filterD(!is.na(Species))
+
+(sp.list <- unique(gcat.bio$Species) %>% sort())
+
+unique(gcat.bio$Site[gcat.bio$Year==2013])
+```
+
+
+```{r Make new effort object eff2}
+headtail(eff)
+```
+
+```{r merge eff2 and bio2}
+cpe <- left_join(eff, gcat.bio, by=c("Year","Site")) %>%
   as.data.frame()
 
 headtail(cpe)
@@ -167,81 +294,69 @@ str(cpe)
 
 
 ```{r Add zeros for species by site}
-cpe %<>% addZeroCatch("Site","Species", zerovar = "Count") %>%
+
+cpe %<>% addZeroCatch("Site","Species", zerovar = "caught") %>%
   arrange(Year,Site)
-headtail(cpe)
-```
 
-Now lets make some length bins. Themn some relative weight.
+cpe$ID <- paste(cpe$Year,".",cpe$Site,",",cpe$Species)
 
+cpe %<>% addZeroCatch("ID","gcat", zerovar = "caught") %>%
+  arrange(Year,Site)
+  
+cpe %<>% select(Year:caught)
 
-  Lets create a new variable for 20 mm length bins.
-
-```{r lcat20 2013 - 2017, tidy=TRUE}
-cpe %<>% mutate(lcat20=lencat(Length,w=20))
-cpe %<>% mutate(lcat10=lencat(Length,w=10))
-```
-
-```{r View Length Bins 2013 - 2017, include=FALSE}
-headtail(cpe)
-str(cpe)
-#1-30-2018#write.csv(cpe,"Data/Clean-Data/All-CPE.csv",row.names = FALSE)
-```
-
-
-```{r Seperate out LMB}
-lmb.cpe1 <- cpe[cpe$Species == 317,] %>%
-  select(Year:lcat20) %>%
-  arrange(Year,Site,FID,Length)
-
-str(lmb.cpe1)
-headtail(lmb.cpe1)
-#1-30-2018#write.csv(lmb.cpe1,"Data/Clean-Data/lmb-cpe1.csv",row.names = FALSE)
-lmb.cpe1 <- read.csv("Data/Clean-Data/lmb-cpe1.csv")
-```
-
-```{r making variable for gabelhouse length category}
-### creating size breaks for Gabelhouse Length categories for Largemouth Bass
-(lmb.cuts2 <- psdVal("Largemouth Bass"))
-
-### adding gcat variable to data frame
-lmb.cpe <- lmb.cpe1 %>%
-  mutate(gcat=lencat(Length, breaks = lmb.cuts2,
-                     use.names = TRUE, drop.levels = TRUE))  ### create Gabelhouse Length Categories
-
-headtail(lmb.cpe)  
-```
-
-```{r Getting Standard Weight values from literature (FSA Package)}
-(wsLMB <- wsVal("Largemouth Bass", simplify = TRUE))
-(wsLMB_min <- wsLMB[["min.TL"]])
-(wsLMB_int <- wsLMB[["int"]])
-(wsLMB_slp <- wsLMB[["slope"]])
 ```
 ```{r}
-lmb.cpe %<>% mutate(logW=log10(Weight),logL=log10(Length))
+str(cpe)
+headtail(cpe) # nrow = 3132
+
+
+(tmp <- cpe[cpe$Year==2016,] %>% arrange(Site,Species,gcat))
+(tmp <- cpe[cpe$Year==2016,] %>% arrange(gcat))
+
+(tmp2 <- tmp[tmp$Site==18,])
+
+### Missing
+### Substock 314
+(unique(tmp2$Species) %>% sort())
+tmp[tmp$Site==18 & tmp$gcat=="substock",] %>% arrange(gcat,Species)
+
+### Stock All present
+(unique(tmp2$Species) %>% sort())
+tmp[tmp$Site==18 & tmp$gcat=="stock",] %>% arrange(gcat,Species)
+
+### Quality 314
+length(unique(tmp2$Species)) - nrow(tmp[tmp$Site==18 & tmp$gcat=="quality",])
+
+(unique(tmp2$Species) %>% sort())
+tmp[tmp$Site==18 & tmp$gcat=="quality",] %>% arrange(gcat,Species)
+
+### preferred 314
+length(unique(tmp2$Species)) - nrow(tmp[tmp$Site==18 & tmp$gcat=="preferred",])
+
+(unique(tmp2$Species) %>% sort())
+tmp[tmp$Site==18 & tmp$gcat=="preferred",] %>% arrange(gcat,Species)
+
+### memorable 302,334,41
+length(unique(tmp2$Species)) - nrow(tmp[tmp$Site==18 & tmp$gcat=="memorable",])
+
+(unique(tmp2$Species) %>% sort())
+tmp[tmp$Site==18 & tmp$gcat=="memorable",] %>% arrange(gcat,Species)
+
+### trophy 302,334,41
+length(unique(tmp2$Species)) - nrow(tmp[tmp$Site==18 & tmp$gcat=="trophy",])
+
+(unique(tmp2$Species) %>% sort())
+tmp[tmp$Site==18 & tmp$gcat=="trophy",] %>% arrange(gcat,Species)
+
+(unique(tmp$Species) %>% sort())
 ```
 
 
-```{r Calculating Standard and Relative Weight}
-lmb.cpe %<>% mutate(Ws = 10^(wsLMB_int+wsLMB_slp*logL),
-                 Wr=(Weight/Ws)*100)
-headtail(lmb.cpe)
-headtail(lmb.cpe[lmb.cpe$Year==2013,]) ### Now I have Wr for 2013
+
+```{r , include=FALSE}
+headtail(cpe)
+str(cpe)
+#2-8-2018#write.csv(cpe,"Data/Clean-Data/CPUE-gcat_2013-2016.csv",row.names = FALSE)
 ```
-
-
-
-```{r Make lmb.cpe.csv}
-#1-30-2018#write.csv(lmb.cpe,"Data/Clean-Data/lmb-cpe.csv",row.names = FALSE)
-```
-
-
-
-
-
-
-
-
-
 

@@ -1,5 +1,5 @@
 ---
-title: "Condition of Lake Erie Largemouth Bass Sampled in the ODOW Nearshore Community Survey 2014-2017"
+title: "Condition of Lake Erie Largemouth Bass Sampled in the ODOW Nearshore Community Survey 2013-2017"
 author: "Alex Benecke"
 date: "January 4, 2018"
 output: pdf_document
@@ -25,25 +25,41 @@ library(Matching)
 ```
 
 ```{r Load Data, results='hide'}
-#Stock <- read.csv("Data/Clean-Data/2012-2017_nearshore-survey-largemouth-bass_Stock_CLEAN.csv") %>% 
-Stock <- read.csv("Data/Clean-Data/lmb-cpe.csv") %>% 
+Stock <- read.csv("Data/Clean-Data/largemouth-bass_Wr_Stock.csv") %>% 
   filter(Length>=200) %>%
+  filter(Year<2017) %>%
+  filterD(!is.na(Wr)) %>%
   arrange(Year,gcat)
 
 
 Stock$fyr <- factor(Stock$fyr)
 Stock$Year <- factor(Stock$Year)
-
-headtail(Stock)
 ```
 ```{r View Data, tidy=TRUE}
+headtail(Stock)
 str(Stock)
 unique(Stock$fyr)
 ```
 
   **Note**
   
-  *I removed the years 2012 and 2013. 2012 because only large fish have weight length data and more and differenct sites were samples. 2013 lacks weight data due to the loss of unifying ID variable and weight and lengths being seperated on different tabs.*
+  *I removed the years 2012 and 2017. 2012 because only large fish have weight length data and more and differenct sites were samples. I removed 2017 due to differences in the survey.*
+  
+  **Note**
+  
+  *I am removing a fish from site 15 year 2013 because it appears to be a outlier (Wr > 200). Probably due to data entry error.*
+```{r Remove outlier, results='hide}
+nrow(Stock)
+(Where.r.u <- Stock[Stock$Weight==1714,]) ## row 43
+(rm.outlier <- as.numeric(row.names(Stock[Stock$Weight==1714,])))
+
+
+Stock <- Stock[-c(rm.outlier),] %>%
+  filter(!is.na(Wr))
+str(Stock)
+headtail(Stock)
+```
+
   
 \newpage
 
@@ -53,8 +69,6 @@ unique(Stock$fyr)
 (Wr.Stock <- Summarize(Wr~Year,data = Stock) %>%
   arrange(Year))
 ```
-
-  I have created a file with the relative weight of each gabelhouse length category for each year. The file name is relative-weight_largemouth-bass_STOCK.csv.
 
 
 **Note**
@@ -81,13 +95,13 @@ summary(mc1)
 ```
 
 
-  Looks like Wr *is significantly different* between years (One-Way ANOVA, $F_{3, 400}$ = 4.72, p = 0.00299). There is *no significant difference* in relative weight between 
-  2013 and 2015 (Tukey HSD, t = -2.30, p = 0.0985),
-  2013 and 2016 (Tukey HSD, t = -0.08, p = 0.9998), 
-  2015 and 2014 (Tukey HSD, t = 0.095, p = 0.9997), and 
-  2015 and 2016 (Tukey HSD, t = 2.31, p = 0.0977). However, relative weight *is significantly different* between 
-  2014 and 2013 (Tukey HSD, t = -2.86, p = 0.0229), and 
-  2014 and 2016 (Tukey HSD, t = 2.90, p = 0.0199).
+  Looks like Wr *is significantly different* between years (One-Way ANOVA, $F_{3, 406}$ = 4.00, p = 0.007933). There is *no significant difference* in relative weight between
+  2013 and 2014 (Tukey HSD, t = -1.94, p = 0.2102),
+  2013 and 2015 (Tukey HSD, t = -1.52, p = 0.4241),
+  2013 and 2016 (Tukey HSD, t = 1.02, p = 0.7346), 
+  2015 and 2014 (Tukey HSD, t = 0.102, p = 0.9996), and 
+  2015 and 2016 (Tukey HSD, t = 2.47, p = 0.0662). However, relative weight *is significantly different* between 
+  2014 and 2016 (Tukey HSD, t = 3.11, p = 0.0110).
 
 
 ### constructing a plot of Wr and Year
@@ -96,14 +110,13 @@ summary(mc1)
 grps.1 <- c("2013", "2014", "2015", "2016")
 nd.1 <- data.frame(Year=factor(grps.1,levels = grps.1))
 (pred.1 <- predict(aov1,nd.1,interval = "confidence"))
-
 ```
 
 ```{r Plot Wr by Year, tidy=TRUE}
 plotCI(as.numeric(nd.1$Year), pred.1[,"fit"],
        li = pred.1[,"lwr"], ui = pred.1[,"upr"],
        pch=19, xaxt = "n", 
-       xlim = c(0.8, 4.2), ylim = c(65,135),
+       xlim = c(0.8, 4.2), ylim = c(79,121),
        xlab = "Year", ylab = "Mean Wr")
 
 lines(nd.1$Year, pred.1[,"fit"],col="gray50")
@@ -112,7 +125,7 @@ axis(1,at=nd.1$Year, labels = nd.1$Year)
 
 cld(mc1)
 
-text(x=nd.1$Year, y=pred.1[,"upr"], labels = c("b", "a", "ab", "b"), pos=3)
+text(x=nd.1$Year, y=pred.1[,"upr"], labels = c("ab", "a", "ab", "b"), pos=3)
 
 abline(h=100,lty=4,col="green")
 ```
@@ -120,10 +133,11 @@ abline(h=100,lty=4,col="green")
 
 ```{r Testing Assumptions, tidy=TRUE}
 residPlot(aov1)
-leveneTest(aov1)
+leveneTest(aov1) # Pitential outlier line 43
+# 2013 site 15 Weight = 1714 Length = 368 Wr > 200
 ```
 
-  Variance are equal and the homoscedasticity assumption is likley met (Levene's Test, $F_{3, 400}$ = 0.9702, p = 0.4067). 
+  Variance are equal and the homoscedasticity assumption is likley met (Levene's Test, $F_{3, 406}$ = 1.5423, p = 0.203). 
 
   **Without 2017** *Variance are equal and the homoscedasticity assumption is likley met (Levene's Test, $F_{2, 311}$ = 1.75, p = 0.18).*
 
@@ -134,95 +148,8 @@ pred.1 <- data.frame(Year,pred.1)
 names(pred.1) <- c("Year", "Wr", "LCI", "UCI")
 str(pred.1)
 head(pred.1)
-#1-30-2018#write.csv(pred.1,file = "Data/Clean-Data/relative-weight_largemouth-bass_STOCK.csv",row.names = FALSE)
+#2-9-2018#write.csv(pred.1,file = "Data/Clean-Data/summary-data/relative-weight_largemouth-bass_STOCK.csv",row.names = FALSE)
 ```
-
-### Kruskal-Wallis Test
-
-  A non-parametric equivalent to a one-way ANOVA. This will test if distributions are similarly shaped with equal variances among groups, that the medians are equal among all groups.
-  
-```{r Kruskal-Wallis Test}
-kruskal.test(Wr~fyr,data = Stock)
-```
-
-  This seems to sugest that the median for at least one group differs from the medians of one or more of the years (Kruskal-Wallis rank sum test, Kruskal-wallis chi-squared = 17.5, df = 3, p < 0.001).
-  
-```{r Dunn Multiple Comparison}
-dunnTest(Wr~fyr,data = Stock, method = "bonferroni")
-dunnTest(Wr~fyr,data = Stock, method = "holm")
-```
-
-**Holm adjusted p-value**
-
-  The Wr *is significantly different* between 2014 and 2016 (Dunn Multiple Comarison Test, Z = -3.77, p < 0.001), and 2015 and 2016 (Dunn Multiple Comarison Test, Z = -2.64, p = 0.041). However, Wr is not different between any other years.
-
-
-
-
-
-### 2014-2016
-
-  I want to redo the above analysis without the 2017 which I have decided not to use due to differences in data collection. I will leave the above code for now incase I or one of my coauthors wants to reference it later.
-
-
-```{r Anova Wr Year 2014 - 2016, tidy=TRUE}
-aov2 <- lm(Wr~fyr,data=Stock[Stock$Year<2017,])
-#save(aov2,file = "model-output/aov2.rda")
-Anova(aov2)
-
-mc2 <- glht(aov2,mcp(fyr="Tukey"))
-summary(mc2)
-```
-
-  Looks like relative weight *is significantly different* between years (One-Way ANOVA, $F_{2, 311}$ = 5.04, p = 0.007). There is *no significant difference* in relative weight between 2014 and 2015 (Tukey HSD, t = 0.1, p = 0.994). However, relative weight *is significantly different* between 2014 and 2016 (Tukey HSD, t = 2.98, p = 0.008), and 2015 and 2016 (Tukey HSD, t = 2.36, p = 0.049).
-
-
-### constructing a plot of Wr and Year 2014 - 2016
-
-```{r Create Results to be plotted 2014 - 2016, tidy=TRUE}
-grps <- c("2014", "2015", "2016")
-nd <- data.frame(fyr=factor(grps,levels = grps))
-(pred <- predict(aov2,nd,interval = "confidence"))
-
-```
-
-```{r Plot Wr by Year 2014 - 2016, tidy=TRUE}
-plotCI(as.numeric(nd$fyr), pred[,"fit"],
-       li = pred[,"lwr"], ui = pred[,"upr"],
-       pch=19, xaxt = "n", 
-       xlim = c(0.8, 3.35), ylim = c(75,125),
-       xlab = "Year", ylab = "Mean Wr")
-
-lines(nd$fyr, pred[,"fit"],col="gray50")
-
-axis(1,at=nd$fyr, labels = nd$fyr)
-
-cld(mc2)
-
-text(x=nd$fyr, y=pred[,"upr"], labels = c("a", "a", "b"), pos=3)
-
-abline(h=100,lty=4,col="green")
-```
-
-
-```{r Testing Assumptions 2014 - 2016, tidy=TRUE}
-residPlot(aov2)
-leveneTest(aov2)
-```
-
-  Variance are equal and the homoscedasticity assumption is likley met (Levene's Test, $F_{2, 311}$ = 1.75, p = 0.18).
-
-
-```{r real quick make Wr.csv from pred 2014 - 2016, tidy=TRUE}
-Year <- c("2014", "2015", "2016")
-pred <- data.frame(Year,pred)
-names(pred) <- c("Year", "Wr", "LCI", "UCI")
-str(pred)
-head(pred)
-#1-17-2018#write.csv(pred,file = "Data/Clean-Data/2014-16_relative-weight_largemouth-bass_STOCK.csv")
-```
-
-
 
 
 ### To Be Continued...
