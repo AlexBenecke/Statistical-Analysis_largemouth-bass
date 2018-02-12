@@ -25,9 +25,8 @@ library(Matching)
 ```
 
 ```{r Load Data, results='hide'}
-Stock <- read.csv("Data/Clean-Data/largemouth-bass_Wr_Stock.csv") %>% 
-  filter(Length>=200) %>%
-  filter(Year<2017) %>%
+Stock <- read.csv("Data/Clean-Data/largemouth-bass_Wr_Stock.csv") %>%
+  filter(Year < 2017) %>%
   filterD(!is.na(Wr)) %>%
   arrange(Year,gcat)
 
@@ -47,22 +46,9 @@ unique(Stock$fyr)
   
   **Note**
   
-  *I am removing a fish from site 15 year 2013 because it appears to be a outlier (Wr > 200). Probably due to data entry error.*
-```{r Remove outlier, results='hide}
-nrow(Stock)
-(Where.r.u <- Stock[Stock$Weight==1714,]) ## row 43
-(rm.outlier <- as.numeric(row.names(Stock[Stock$Weight==1714,])))
-
-
-Stock <- Stock[-c(rm.outlier),] %>%
-  filter(!is.na(Wr))
-str(Stock)
-headtail(Stock)
-```
-
+  *I am removing a fish from site 15 year 2013 because it appears to be a outlier (Wr > 200). Probably due to data entry error.* **I went back and did this in 'Create-Wr-Gabelhouse-Data.Rmd' where I make the data file I use for this analysis.**
   
-\newpage
-
+  
 ### Summarize Relative Weight by Year
 
 ```{r Summarizing Wr Data for 2012,2014,2015,2016, tidy=TRUE}
@@ -89,19 +75,21 @@ Lets start exploring the relative weight data. I have two questions I would like
 aov1 <- lm(Wr~Year,data=Stock)
 #save(aov1,file = "model-output/aov1.rda")
 Anova(aov1)
-
+```
+\newpage
+```{r Tukey,tidy=TRUE}
 mc1 <- glht(aov1,mcp(Year="Tukey"))
 summary(mc1)
 ```
 
 
   Looks like Wr *is significantly different* between years (One-Way ANOVA, $F_{3, 406}$ = 4.00, p = 0.007933). There is *no significant difference* in relative weight between
-  2013 and 2014 (Tukey HSD, t = -1.94, p = 0.2102),
+  2013 and 2014 (Tukey HSD, t = -1.94, p = 0.2101),
   2013 and 2015 (Tukey HSD, t = -1.52, p = 0.4241),
   2013 and 2016 (Tukey HSD, t = 1.02, p = 0.7346), 
-  2015 and 2014 (Tukey HSD, t = 0.102, p = 0.9996), and 
-  2015 and 2016 (Tukey HSD, t = 2.47, p = 0.0662). However, relative weight *is significantly different* between 
-  2014 and 2016 (Tukey HSD, t = 3.11, p = 0.0110).
+  2015 and 2014 (Tukey HSD, t = 0.10, p = 0.9996), and 
+  2015 and 2016 (Tukey HSD, t = 2.47, p = 0.0656). However, relative weight *is significantly different* between 
+  2014 and 2016 (Tukey HSD, t = 3.11, p = 0.0107).
 
 
 ### constructing a plot of Wr and Year
@@ -133,13 +121,19 @@ abline(h=100,lty=4,col="green")
 
 ```{r Testing Assumptions, tidy=TRUE}
 residPlot(aov1)
+```
+\newpage
+```{r, tidy=TRUE}
 leveneTest(aov1) # Pitential outlier line 43
 # 2013 site 15 Weight = 1714 Length = 368 Wr > 200
 ```
 
   Variance are equal and the homoscedasticity assumption is likley met (Levene's Test, $F_{3, 406}$ = 1.5423, p = 0.203). 
 
-  **Without 2017** *Variance are equal and the homoscedasticity assumption is likley met (Levene's Test, $F_{2, 311}$ = 1.75, p = 0.18).*
+\vspace{0.5in}
+
+**Without 2017** 
+  *Variance are equal and the homoscedasticity assumption is likley met (Levene's Test, $F_{2, 311}$ = 1.75, p = 0.18).*
 
 
 ```{r real quick make Wr.csv from pred, tidy=TRUE}

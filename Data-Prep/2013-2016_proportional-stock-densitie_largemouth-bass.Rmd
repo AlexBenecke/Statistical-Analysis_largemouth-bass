@@ -24,7 +24,7 @@ library(Matching)
 
 ```{r Load Data, tidy=TRUE, echo=TRUE}
 #PSD <- read.csv("Data/Clean-Data/2012-2017_nearshore-survey-largemouth-bass_Stock_CLEAN.csv")  %>%
-PSD <- read.csv("Data/Clean-Data/lmb-cpe.csv")  %>%
+PSD <- read.csv("Data/Clean-Data/largemouth-bass_Wr_Stock.csv")  %>%
   arrange(Year,FID,Length)
 PSD$fyr <- as.factor(PSD$fyr)
 
