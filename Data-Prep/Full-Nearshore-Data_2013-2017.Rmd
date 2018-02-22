@@ -223,7 +223,7 @@ cpeSum <- catch %>% group_by(Year,Species) %>%
   as.data.frame()
 
 cpeSum[cpeSum$Species==317 | cpeSum$Species==314 | cpeSum$Species==316,]
-#2-7-2018#write.csv(cpeSum,"Data/Clean-Data/summary-data/cpeSum.csv",row.names = FALSE)
+#2-22-2018#write.csv(cpeSum,"Data/Clean-Data/summary-data/cpeSum.csv",row.names = FALSE)
 ```
 
 
