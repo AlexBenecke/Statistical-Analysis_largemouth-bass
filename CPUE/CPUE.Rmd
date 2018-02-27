@@ -29,7 +29,6 @@ library(ggplot2)
 library(knitr)
 ```
 
-\newpage
 
 # Hypothesis
 
@@ -40,61 +39,29 @@ library(knitr)
 3) $H_0$: There is no difference in cpe for largemouth bass smaller than quality length (300mm) among years 2013 - 2016.
 
 
-## Explaining Analysis ##
-
-  Analysis is divided into three sections. Part 1 uses aov() to test the three hypothesis. Part 2 uses lme() to test the three hypothesis. part 3 uses lme() with year and gcatQ to test the three hypothesis.
-
-  I start out simply using aov() to test differences in CPE (Catch/Hour) between years. I sum cpe by site and year and then take the average for each year regardless of size for $H_0$ 1. I run the anova on the yearly average to avoid artificially inflating my sample size (4 years of data instead of 8 to 12 of sites in each year [Unbalanced number of sites]). For $H_0$ 2 and 3 I divide largemouth bass into two categories quality + (greater than or equal to 300mm) and quality - (< 300 mm). Since sites were no largemouth bass were caught cannot influence size structure I removed zeroes from the data. I used aov() as described earlier and tested for differences between years first for Q+ ($H_0$ 2) and then for Q- ($H_0$ 3) largemouth bass.
-  
-  I also tried to use a lme() model to test the above hypothesis (Part 2) following the above procedure for preparing my data. The only exception is instead of taking a yearly average I sum by site and used sites as a random effect. I log cpe.hr to try and normalize residuals which seems to mostly work (Especially if I remove zeroes [including zeroes and log(cpe.hr +1) skews residuals terribly]). 
-  
-  In part 3 I ran one lme() model with both a year and a gcatQ variable (Factor, 2 levels Q+ and Q-) to test all three hypothesis at once. 
-
-## Problems and Questions About What I Did  ##
-
-1) Use aov() or lme()?  
-  
-    I'm unsure if I did the lme() correctly or if it is necessary. The aov() seems overly simple. Am I doing it right? 
-
-2) correlation structure for lme()?
-
-    When fitting the lme() in parts 2 and 3 I cannot specify a correlation structure (don't know how or which one to choose). I don't know if this is necessary?
-
-3) pairwise comparison with lme()?  
-    
-     The pairwise comparison (Year to Year \& Q+ Year to Q- Year) doesnt seem to work? 
-  
-
-
-**Note:**
-  *I am going to remove sites where largemouth bass were not captured because if no larg emouth bass were caught that site can not affect the size structure. I will only do this when comparing gabelhouse length categories.*
-
 \newpage
 
-# Part 1 aov()
 
-## 1) $H_0$: There is no difference in cpe (catch/hour) among years 2013 - 2016. ##
+# 1) $H_0$: There is no difference in cpe (catch/hour) among years 2013 - 2016. 
 
-#### Load and Prepare Data ####
+## Load and Prepare Data ##
 
 **Load Data**
 
 ```{r Load cpe data, tidy=TRUE}
-cpe <- read.csv("Data/Clean-Data/CPUE_2013-2016.csv") %>%
-  filterD(Species==317)
+gcat <- read.csv("Data/Clean-Data/CPUE-gcat_2013-2016.csv") %>%
+  filterD(Species==317) %>%
+  arrange(Site,Year)
 
-cpe$Site <- factor(cpe$Site)
+gcat$Site <- factor(gcat$Site) 
+
+cpeSum <- aggregate(cpe.hr ~ Year + Site, data = gcat, FUN = sum)
 ```
 ```{r, include=FALSE}
-str(cpe)
-headtail(cpe)
+str(cpeSum)
+headtail(cpeSum)
 ```
 
-**Sum cpe by Site and Year and Display Data**
-```{r Aggregate CPUE Sum by Year and Site, tidy=TRUE}
-cpeSum <- aggregate(cpe.hr ~ Year + Site, data = cpe, FUN = sum) %>%
-   arrange(Site,Year) 
-```
 \centering
 \begin{minipage}{0.4\textwidth}
 ```{r, echo=FALSE}
@@ -108,71 +75,45 @@ knitr::kable(cpeSum[c(22:42),], format = "latex")
 \end{minipage}
 \flushleft
 
-**Average cpe by Year**
-```{r Aggregate CPUE Mean by Year, tidy=TRUE}
-(cpeMean <- aggregate(cpe.hr ~ Year, data = cpeSum, FUN = mean))
-```
-
-\newpage
-
-#### Test Hypothesis 1 ####
+## Test Hypothesis 1 ##
 ```{r Anova mean cpe.hr and Year, tidy=TRUE}
-aov1 <- aov(cpe.hr~Year,data = cpeMean)
+aov1 <- aov(cpe.hr~Year,data = cpeSum)
 summary(aov1)
 ```
 ```{r, echo=FALSE}
-bargraph.CI(cpeSum$Year,cpeSum$cpe.hr,
+boxplot(cpe.hr~Year,data = cpeSum,
             main="Mean Catch Per Hour")
 ```
 
-### Results $H_0$ 1 ###
+## Results $H_0$ 1 ##
 
-  There is *no significant difference* in CPUE between years ($F_{1,2}$ = 0.386, p = 0.598).
-
-
+  There is *no significant difference* in CPUE between years ($F_{1,40}$ = 0.071, p = 0.792).
 
 
 
 
-## 2) $H_0$: There is no differenct in cpe for quality length (300mm) and larger largemouth bass among years 2013 - 2016. ##
+
+# 2) $H_0$: There is no differenct in cpe for quality length (300mm) and larger largemouth bass among years 2013 - 2016. 
 
 
-#### Load and Prepare Data #### 
+## Load and Prepare Data ## 
 
 **Load Data with Gcat and make Q+ and Q-**
 
-```{r Load gcat cpe data, tidy=TRUE}
-gcat <- read.csv("Data/Clean-Data/CPUE-gcat_2013-2016.csv") %>%
-  filterD(Species==317) 
+```{r, echo=FALSE}
+headtail(gcat)
 
-gcat$Site <- factor(gcat$Site) 
+xtabs(caught ~ gcat + Year, data = gcat)
 ```
 
 \newpage
 
-```{r}
-xtabs(caught ~ gcat + Year, data = gcat)
-```
 **Make Qcat Variable and Data Frame**
 ```{r Make Qcat Variable, tidy=TRUE}
 Qcat <- gcat %>% mutate(gcatQ=mapvalues(gcat,
                                  from=c("substock", "stock","quality","preferred", "memorable", "trophy"),
                                  to=c("quality-", "quality-", "quality+", "quality+", "quality+", "quality+"))) %>%
   dplyr::select(Year, Site, gcatQ, cpe.hr)
-```
-**Remove Zeroes**
-```{r remove zeros Qpls}
-xtabs(cpe.hr ~ Site + Year, data = Qcat)
-
-for(i in 1:length(Qcat$cpe.hr)){
-  if(Qcat$cpe.hr[i]==0){
-    Qcat$cpe.hr[i] = NA
-  } else{
-    Qcat$cpe.hr[i] = Qcat$cpe.hr[i]
-  }
-}
-
-Qcat <- Qcat[!is.na(Qcat$cpe.hr),] ### remove NAs
 ```
 
 **Create Data Frame With Only Quality + Fish**
@@ -183,51 +124,44 @@ Qpls$gcatQ <- droplevels(Qpls$gcatQ)
 
 str(Qpls)
 
-Qpls.sum <- aggregate(cpe.hr ~ Site + Year, data = Qpls, FUN = sum) %>%
+Qpls.sum <- aggregate(cpe.hr ~ Year + Site, data = Qpls, FUN = sum) %>%
     arrange(Site,Year)
 ```
 \centering
 \begin{minipage}{0.4\textwidth}
 ```{r, echo=FALSE}
-knitr::kable(Qpls.sum[c(1:17),], format = "latex")
+knitr::kable(Qpls.sum[c(1:21),], format = "latex")
 ```
 \end{minipage}
 \begin{minipage}{0.4\textwidth}
 ```{r, echo=FALSE}
-knitr::kable(Qpls.sum[c(18:34),], format = "latex")
+knitr::kable(Qpls.sum[c(22:42),], format = "latex")
 ```
 \end{minipage}
 \flushleft
 
-**Average cpe for Q+ by Year**
-```{r Create Qpls.mean object, tidy=TRUE}
-Qpls.mean <- aggregate(cpe.hr ~ Year, data = Qpls.sum, FUN = mean)
-
-xtabs(cpe.hr ~ Year, data = Qpls.mean)
-```
-
-#### Test Hypothesis 2 #### 
+## Test Hypothesis 2 ##
 ```{r Anova of Q+ LMB, tidy=TRUE}
-aov.Qpls <- aov(cpe.hr ~ Year, data = Qpls.mean)
+aov.Qpls <- aov(cpe.hr ~ Year, data = Qpls.sum)
 summary(aov.Qpls)
 ```
 ```{r, echo=FALSE}
-bargraph.CI(Qpls.sum$Year,Qpls.sum$cpe.hr,
+boxplot(cpe.hr ~ Year, data = Qpls.sum,
             main="Mean Catch Per Hour Quality +")
 ```
 
-### Results $H_0$ 2 ###
+## Results $H_0$ 2 ##
 
-  There is *no significant difference* in CPUE for fish > Quality length (300mm) among years 2013 - 2016 ($F_{1,2}$ = 3.09, p = 0.221).
-
-
+  There is *no significant difference* in CPUE for fish > Quality length (300mm) among years 2013 - 2016 ($F_{1,40}$ = 0.515, p = 0.477).
 
 
 
 
-## 3) $H_0$: There is no difference in cpe for largemouth bass smaller than quality length (300mm) among years 2013 - 2016. ##
 
-#### Load and Prepare Data #### 
+
+# 3) $H_0$: There is no difference in cpe for largemouth bass smaller than quality length (300mm) among years 2013 - 2016. 
+
+## Load and Prepare Data ##
 
 **Create Q- Data Frame**
 ```{r Create Q- Object, tidy=TRUE}
@@ -236,612 +170,79 @@ Qless$gcatQ <- droplevels(Qless$gcatQ)
 
 str(Qless)
 
-Qless.sum <- aggregate(cpe.hr ~ Year+Site, data = Qless, FUN = sum) %>%
+Qless.sum <- aggregate(cpe.hr ~ Year + Site, data = Qless, FUN = sum) %>%
     arrange(Site,Year)
 ```
 \centering
 \begin{minipage}{0.4\textwidth}
 ```{r, echo=FALSE}
-knitr::kable(Qless.sum[c(1:16),], format = "latex")
+knitr::kable(Qless.sum[c(1:21),], format = "latex")
 ```
 \end{minipage}
 \begin{minipage}{0.4\textwidth}
 ```{r, echo=FALSE}
-knitr::kable(Qless.sum[c(17:32),], format = "latex")
+knitr::kable(Qless.sum[c(22:42),], format = "latex")
 ```
 \end{minipage}
 \flushleft
 
-**Average cpe by Year for Q- fish**
-```{r Create Qless.mean Object, tidy=TRUE}
-Qless.mean <- aggregate(cpe.hr ~ Year, data = Qless.sum, FUN = mean)
-
-xtabs(cpe.hr ~ Year, data = Qless.mean)
-```
-
-#### Test Hypothesis 3 #### 
+## Test Hypothesis 3 ##
 ```{r Anova Q- LMB, tidy=TRUE}
-aov.Qless <- aov(cpe.hr~ Year, data = Qless.mean)
+aov.Qless <- aov(cpe.hr ~ Year, data = Qless.sum)
 summary(aov.Qless)
 ```
 ```{r, echo=FALSE}
-bargraph.CI(Qless.sum$Year,Qless.sum$cpe.hr,
+boxplot(cpe.hr ~ Year, data = Qless.sum,
             main="Mean Catch Per Hour Quality-")
 ```
 
-### Results $H_0$ 3 ###
+## Results $H_0$ 3 ##
 
-  There is *no significat difference* in CPUE for fish < Quality length among years 2013 - 2016 ($F_{1,2}$ = 0.489, p = 0.557).
+  There is *no significat difference* in CPUE for fish < Quality length among years 2013 - 2016 ($F_{1,40}$ = 0.014, p = 0.906).
 
+\vspace{2em}
 
-
-*End of Part 1*
-
-
-
-
-
-
-# Part 2 - Repeated Measures Anova with Mixed effects lme() 
-
-Source for following analysis:
-https://rcompanion.org/handbook/I_09.html
-
-## 1) $H_0$: There is no difference in cpe (catch/hour) among years 2013 - 2016. ##
-
-#### Load and Prepare Data #### 
-
-  **Sum CPE by Site and Year without any gabelhouse length categories.**
-
-```{r Create cpeSum2 Object, tidy=TRUE}
-cpeSum2 <- aggregate(cpe.hr ~ Site + Year, data = cpe, FUN = sum) %>%
-   arrange(Site,Year)
-```
-\centering
-\begin{minipage}{0.4\textwidth}
-```{r, echo=FALSE}
-knitr::kable(cpeSum2[c(1:21),], format = "latex")
-```
-\end{minipage}
-\begin{minipage}{0.4\textwidth}
-```{r, echo=FALSE}
-knitr::kable(cpeSum2[c(22:42),], format = "latex")
-```
-\end{minipage}
-\flushleft
-```{r finish cpeSum2 Object, tidy=TRUE}
-cpeSum2$Site <- factor(cpeSum2$Site)
-cpeSum2$Year <- factor(cpeSum2$Year)
-str(cpeSum2)
-```
-
-  **Find an initial value for correlation structure.** 
-
-**Note:**
-
-  *I left the code but did not specify a correlation structure in the model.*
-  
-```{r corr structure value, eval=FALSE}
-mod.a = gls(log(cpe.hr+1) ~ Year,
-            data = cpeSum2)
-ACF(mod.a)
-
-mod.b = lme(log(cpe.hr+1) ~ Year,
-            random = ~1|Site,
-            data = cpeSum2)
-ACF(mod.b)
-```
-
-\newpage
-
-#### Fit lme() to Test Hypothesis 1 #### 
-```{r Fit cpe Model, tidy=TRUE}
-#?corClasses
-
-cpe.mod <- lme(log(cpe.hr+1) ~  Year,
-                random =  ~1 | Site,
-                data = cpeSum2,
-                method = "REML")
-
-Anova(cpe.mod)
-
-
-cpe.fixed <- gls(log(cpe.hr+1) ~ Year,
-                data = cpeSum2,
-                method = "REML")
-Anova(cpe.fixed)
-
-anova(cpe.mod,cpe.fixed)
-```
-
-  Looks like the cpe model with random effects of site is better than the model without random effects (AIC = 133.97, 156.24 respectively). There is *no significant difference* in cpe.hr between years (Analysis of Deviance Table, $X_2$ = 1.13, df = 3, pr(>Chisq) = 0.769).
-
-
-**p-value and pseudo R-squared for model** 
-
-  The nagelkerke function can be used to calculate a p-value and pseudo R-squared value for the model.
-
-```{r Null models for random effects model, tidy=TRUE}
-null.mod <- lme(log(cpe.hr+1) ~ 1,
-                random = ~1|Site,
-                data = cpeSum2)
-nagelkerke(cpe.mod,
-           null.mod)
-```
-```{r Null models for no random effects model, tidy=TRUE, results='hide'}
-
-null.mod2 <- gls(log(cpe.hr+1)~1,
-                 data = cpeSum2)
-
-nagelkerke(cpe.mod,
-           null.mod2)
-```
-
-  Very poor $R^2$. Also, not sure which pseudo $R^2$ to use? 
-
-**Post-hoc Analysis**
-
-```{r post hoc analysis cpe.mod, tidy=FALSE}
-leastsquare = lsmeans(cpe.mod,
-                      pairwise ~ Year,
-                      adjust="tukey")         ###  Tukey-adjusted comparisons
-
-cld(leastsquare,
-    alpha   = 0.05,
-    Letters = letters,     ### Use lower-case letters for .group
-    adjust  = "tukey")     ###  Tukey-adjusted comparisons
-```
-**?**
-
-**Interaction plot**
-
-  For this plot, we will use the groupwiseMean function to calculate the natural mean of each Instruction x Month combination, along with the confidence interval of each mean with the percentile method.
-
-
-```{r, tidy=TRUE,echo=FALSE}
-Sum = groupwiseMean(cpe.hr ~  Year,
-                    data   = cpeSum2,
-                    conf   = 0.95,
-                    digits = 3,
-                    traditional = FALSE,
-                    percentile  = TRUE)
-
-Sum
-```
-```{r, echo=FALSE}
-pd = position_dodge(.2)
-
-ggplot(Sum, aes(x =    Year,
-                y =    Mean)) +
-    geom_errorbar(aes(ymin=Percentile.lower,
-                      ymax=Percentile.upper),
-                   width=.2, size=0.7, position=pd) +
-    geom_point(shape=15, size=4, position=pd) +
-    theme_bw() +
-    theme(axis.title = element_text(face = "bold")) +
-    ylab("Mean Catch Per Hour")
-```
-
-**Histogram of Residuals**
-
-  Residuals from a mixed model fit with nlme should be normally distributed.  Plotting residuals vs. fitted values, to check for homoscedasticity and independence, is probably also advisable.
-
-```{r Residuals plot cpe.mod, echo=FALSE}
-x = residuals(cpe.mod)
-
-plotNormalHistogram(x)
-```
-```{r, echo=FALSE}
-plot(fitted(cpe.mod),
-     residuals(cpe.mod))
-```
-
-### Results $H_0$ 1 ###
-  Comming soon...
-
-
-
-
-## 2) $H_0$: There is no differenct in cpe for quality length (300mm) and larger largemouth bass among years 2013 - 2016. ##
-
-#### Load and Prepare Data #### 
-
-**Create Q+ Data Frame and Show Data**
-```{r, tidy=TRUE, results='hide'}
-Qpls.sum %>% arrange(Site,Year)
-```
-\centering
-\begin{minipage}{0.4\textwidth}
-```{r, echo=FALSE}
-knitr::kable(Qpls.sum[c(1:17),], format = "latex")
-```
-\end{minipage}
-\begin{minipage}{0.4\textwidth}
-```{r, echo=FALSE}
-knitr::kable(Qpls.sum[c(18:34),], format = "latex")
-```
-\end{minipage}
-\flushleft
-```{r}
-Qpls.sum$Site <- factor(Qpls.sum$Site)
-Qpls.sum$Year <- factor(Qpls.sum$Year)
-str(Qpls.sum)
-```
-
-**Value for Correlation Structure (Not Used)**
-```{r corr structure value Qpls, tidy=TRUE, eval=FALSE}
-mod.a.Qpls = gls(log(cpe.hr) ~ Year,
-            data = Qpls.sum)
-ACF(mod.a.Qpls)
-
-mod.b.Qpls = lme(log(cpe.hr) ~ Year,
-            random = ~1|Site,
-            data = Qpls.sum)
-ACF(mod.b.Qpls)
-```
-
-#### Fit lme() to Test Hypothesis 2 #### 
-```{r Qpls.mod, tidy=TRUE}
-Qpls.mod <- lme(log(cpe.hr) ~  Year,
-                random =  ~1 | Site,
-                data = Qpls.sum,
-                method = "REML")
-
-Anova(Qpls.mod)
-
-
-Qpls.fixed <- gls(log(cpe.hr) ~ Year,
-                data = Qpls.sum,
-                method = "REML")
-Anova(Qpls.fixed)
-
-anova(Qpls.mod,Qpls.fixed)
-```
-
-\newpage
-
-**Pseudo R-squared**
-```{r, tidy=TRUE}
-null.Qpls.mod <- lme(log(cpe.hr) ~ 1,
-                random = ~1|Site,
-                data = Qpls.sum)
-nagelkerke(Qpls.mod,
-           null.Qpls.mod)
-
-null.Qpls.fixed <- gls(log(cpe.hr)~1,
-                 data = Qpls.sum)
-
-nagelkerke(Qpls.mod,
-           null.Qpls.fixed)
-```
-
-**Post-hoc analysis**
-
-```{r post hoc analysis Qpls.mod, tidy=FALSE}
-leastsquare.Qpls.mod = lsmeans(Qpls.mod,
-                      pairwise ~ Year,
-                      adjust="tukey")         ###  Tukey-adjusted comparisons
-
-cld(leastsquare.Qpls.mod,
-    alpha   = 0.05,
-    Letters = letters,     ### Use lower-case letters for .group
-    adjust  = "tukey")     ###  Tukey-adjusted comparisons
-```
-   *This isn't working right ^*
-
-**Interaction plot**
-
-```{r, tidy=TRUE, echo=FALSE}
-Sum.Qpls.mod = groupwiseMean(cpe.hr ~  Year,
-                    data   = Qpls.sum,
-                    conf   = 0.95,
-                    digits = 3,
-                    traditional = FALSE,
-                    percentile  = TRUE)
-
-Sum.Qpls.mod
-```
-```{r echo=FALSE}
-pd = position_dodge(.2)
-
-ggplot(Sum.Qpls.mod, aes(x =    Year,
-                y =    Mean)) +
-    geom_errorbar(aes(ymin=Percentile.lower,
-                      ymax=Percentile.upper),
-                   width=.2, size=0.7, position=pd) +
-    geom_point(shape=15, size=4, position=pd) +
-    theme_bw() +
-    theme(axis.title = element_text(face = "bold")) +
-    ylab("Mean Catch Per Hour")
-```
-
-**Residuals Plot**
-```{r, echo=FALSE}
-x.pls = residuals(Qpls.mod)
-
-plotNormalHistogram(x.pls)
-```
-```{r, echo=FALSE}
-plot(fitted(Qpls.mod),
-     residuals(Qpls.mod))
-```
-
-Pretty normal.
-
-### Results $H_0$ 2 ###
-  Comming soon...
-
-
-
-
-## 3) $H_0$: There is no difference in cpe for largemouth bass smaller than quality length (300mm) among years 2013 - 2016. ##
-
-####  Load and Prepare Data #### 
-
-**Create Q- data Frame and View**
-```{r, results='hide'}
-Qless.sum %>% arrange(Site, Year)
-```
-\centering
-\begin{minipage}{0.4\textwidth}
-```{r, echo=FALSE}
-knitr::kable(Qless.sum[c(1:16),], format = "latex")
-```
-\end{minipage}
-\begin{minipage}{0.4\textwidth}
-```{r, echo=FALSE}
-knitr::kable(Qless.sum[c(17:32),], format = "latex")
-```
-\end{minipage}
-\flushleft
-```{r}
-Qless.sum$Site <- factor(Qless.sum$Site)
-Qless.sum$Year <- factor(Qless.sum$Year)
-str(Qless.sum)
-```
-
-**Value for Correlation Structure (Not Used)**
-```{r corr structure value Qlss, tidy=TRUE, eval=FALSE}
-mod.a.Qlss = gls(log(cpe.hr) ~ Year,
-            data = Qless.sum)
-ACF(mod.a.Qlss)
-
-mod.b.Qlss = lme(log(cpe.hr) ~ Year,
-            random = ~1|Site,
-            data = Qless.sum)
-ACF(mod.b.Qlss)
-```
-
-\newpage
-
-#### Fit lme() to Test Hypothesis 3 #### 
-```{r, tidy=TRUE}
-#?corClasses
-
-Qlss.mod <- lme(log(cpe.hr) ~  Year,
-                random =  ~1 | Site,
-                data = Qless.sum,
-                method = "REML")
-
-Anova(Qlss.mod)
-
-
-Qlss.fixed <- gls(log(cpe.hr) ~ Year,
-                data = Qless.sum,
-                method = "REML")
-Anova(Qlss.fixed)
-
-anova(Qlss.mod,Qlss.fixed)
-```
-
-**Pseudo R-Squared**
-```{r, tidy=TRUE}
-null.Qlss.mod <- lme(log(cpe.hr) ~ 1,
-                random = ~1|Site,
-                data = Qless.sum)
-nagelkerke(Qlss.mod,
-           null.Qlss.mod)
-
-null.Qlss.fixed <- gls(log(cpe.hr)~1,
-                 data = Qless.sum)
-
-nagelkerke(Qlss.mod,
-           null.Qlss.fixed)
-```
-
-
-**Post-hoc analysis**
-
-```{r post hoc analysis Qlss.mod, tidy=FALSE}
-leastsquare.Qlss.mod = lsmeans(Qlss.mod,
-                      pairwise ~ Year,
-                      adjust="tukey")         ###  Tukey-adjusted comparisons
-
-cld(leastsquare.Qlss.mod,
-    alpha   = 0.05,
-    Letters = letters,     ### Use lower-case letters for .group
-    adjust  = "tukey")     ###  Tukey-adjusted comparisons
-```
-
-**Interaction plot**
-
-```{r, tidy=TRUE, echo=FALSE}
-Sum.Qlss.mod = groupwiseMean(cpe.hr ~  Year,
-                    data   = Qless.sum,
-                    conf   = 0.95,
-                    digits = 3,
-                    traditional = FALSE,
-                    percentile  = TRUE)
-
-Sum.Qlss.mod
+```{r, echo=FALSE, results='hide'}
+QcatSum <- aggregate(cpe.hr ~ Year + Site + gcatQ, data = Qcat, FUN = sum) %>% 
+  arrange(Site,Year,gcatQ)
+QcatSum
 ```
 
 ```{r, echo=FALSE}
-pd = position_dodge(.2)
+boxplot(cpe.hr ~ gcatQ*Year, data = QcatSum,
+        at = c(1,2,4,5,7,8,10,11),
+        col = c(rgb(0,0,1,0.75),rgb(1,0,0,0.75)),
+        xaxt = "n",yaxt = "n",
+        ylab = "",
+        las=2,
+        bty = "n")
 
-ggplot(Sum.Qlss.mod, aes(x =    Year,
-                y =    Mean)) +
-    geom_errorbar(aes(ymin=Percentile.lower,
-                      ymax=Percentile.upper),
-                   width=.2, size=0.7, position=pd) +
-    geom_point(shape=15, size=4, position=pd) +
-    theme_bw() +
-    theme(axis.title = element_text(face = "bold")) +
-    ylab("Mean Catch Per Hour")
+axis(2,
+     at = seq(0,140,20),
+     las = 2)
+
+mtext(c("2013", "2014", "2015", "2016"),
+     side = 1,
+     line = 1.5,
+     at = c(1.5,4.5,7.5,10.5),
+     cex = 1.25)
+
+mtext("Year",
+      side = 1,
+      line = 3,
+      cex = 1.5)
+
+
+mtext("Mean CPUE (Hours)",
+      side = 2,
+      line = 2.75,
+      cex = 1.5)
+
+legend("topleft",
+       legend = c("Quality +", "Quality -"),
+       col = c(rgb(0,0,1,0.75),rgb(1,0,0,0.75)),
+       pch = 15,
+       cex = 1.5,
+       bty = "n")
 ```
-
-**Residuals Plot**
-```{r, echo=FALSE}
-x.lss = residuals(Qlss.mod)
-
-plotNormalHistogram(x.lss)
-```
-```{r, echo=FALSE}
-plot(fitted(Qlss.mod),
-     residuals(Qlss.mod))
-```
-
-Almost normal
-
-
-### Results $H_0$ 3 ###
-  Comming soon...
-
-
-
-*End of Part 2*
-
-
-
-
-
-# Part 3 - Repeated Measures ANOVA lme(cpe.hr ~ Year + GcatQ + Year*GcatQ)
-
-#### Load and Prepare Data #### 
-
-**Create QcatSum Object and View Data**
- Find the sum of largemouth bass by gcatQ (Q+ and Q-) by site for each Year.
-```{r}
-QcatSum <- aggregate(cpe.hr ~ Year + Site + gcatQ, data = Qcat, FUN = sum)
-```
-\centering
-\begin{minipage}{0.4\textwidth}
-```{r, echo=FALSE}
-knitr::kable(QcatSum[c(1:33),], format = "latex")
-```
-\end{minipage}
-\begin{minipage}{0.4\textwidth}
-```{r, echo=FALSE}
-knitr::kable(QcatSum[c(34:66),], format = "latex")
-```
-\end{minipage}
-\flushleft
-```{r}
-QcatSum$Year <- factor(QcatSum$Year)
-str(QcatSum)
-```
-
-**Value for Correlation Structure (Not Used)**
-```{r corr structure value Qcat, tidy=TRUE, eval=FALSE}
-mod.a.Q = gls(log(cpe.hr) ~ Year,
-            data = QcatSum)
-ACF(mod.a.Q)
-
-mod.b.Q = lme(log(cpe.hr) ~ Year,
-            random = ~1|Site,
-            data = QcatSum)
-ACF(mod.b.Q)
-```
-
-\newpage
-
-#### Fit lme() to Test All Three Hypothesis #### 
-```{r, tidy=TRUE}
-Q.mod <- lme(log(cpe.hr) ~  gcatQ + Year + gcatQ/Year,
-                random =  ~1 | Site,
-                data = QcatSum,
-                method = "REML")
-
-Anova(Q.mod)
-
-
-Q.fixed <- gls(log(cpe.hr) ~  gcatQ + Year + gcatQ*Year,
-                data = QcatSum,
-                method = "REML")
-Anova(Q.fixed)
-
-anova(Q.mod,Q.fixed)
-```
-
-**Pseudo R-Squared**
-```{r, tidy=TRUE}
-null.Q.mod <- lme(log(cpe.hr) ~ 1,
-                random = ~1|Site,
-                data = QcatSum)
-nagelkerke(Q.mod,
-           null.Q.mod)
-
-null.Q.fixed <- gls(log(cpe.hr)~1,
-                 data = QcatSum)
-
-nagelkerke(Q.mod,
-           null.Q.fixed)
-```
-
-
-**Post-hoc analysis**
-
-```{r post hoc analysis Q.mod, tidy=FALSE}
-leastsquare.Q.mod = lsmeans(Q.mod,
-                      pairwise ~ gcatQ:Year,
-                      adjust="tukey")         ###  Tukey-adjusted comparisons
-
-cld(leastsquare.Q.mod,
-    alpha   = 0.05,
-    Letters = letters,     ### Use lower-case letters for .group
-    adjust  = "tukey")     ###  Tukey-adjusted comparisons
-```
-
-**Interaction plot**
-
-```{r, tidy=TRUE, echo=FALSE}
-Sum.Q.mod = groupwiseMean(cpe.hr ~  gcatQ + Year,
-                    data   = QcatSum,
-                    conf   = 0.95,
-                    digits = 3,
-                    traditional = FALSE,
-                    percentile  = TRUE)
-
-Sum.Q.mod
-```
-```{r, echo=FALSE}
-pd = position_dodge(.2)
-
-ggplot(Sum.Q.mod, aes(x =    Year,
-                y =    Mean,
-                color = gcatQ)) +
-    geom_errorbar(aes(ymin=Percentile.lower,
-                      ymax=Percentile.upper),
-                   width=.2, size=0.7, position=pd) +
-    geom_point(shape=15, size=4, position=pd) +
-    theme_bw() +
-    theme(axis.title = element_text(face = "bold")) +
-    ylab("Mean Catch Per Hour")
-```
-
-**Residuals Plot**
-```{r, echo=FALSE}
-x.Q = residuals(Q.mod)
-
-plotNormalHistogram(x.Q)
-```
-```{r, echo=FALSE}
-plot(fitted(Q.mod),
-     residuals(Q.mod))
-```
-
-sorta normal
-
-### Results Part 3 All Hypothesis ###
-
 
