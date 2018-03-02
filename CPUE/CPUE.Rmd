@@ -19,13 +19,6 @@ knitr::opts_chunk$set(echo = TRUE)
 library(FSA)
 library(tidyverse)
 library(magrittr)
-library(sciplot)
-library(nlme)
-library(car)
-library(rcompanion)
-library(multcompView)
-library(lsmeans)
-library(ggplot2)
 library(knitr)
 ```
 
@@ -49,7 +42,7 @@ library(knitr)
 **Load Data**
 
 ```{r Load cpe data, tidy=TRUE}
-gcat <- read.csv("Data/Clean-Data/CPUE-gcat_2013-2016.csv") %>%
+gcat <- read.csv("Data/Clean-Data/CPUE-gcat_2013-2017.csv") %>%
   filterD(Species==317) %>%
   arrange(Site,Year)
 
@@ -84,10 +77,13 @@ summary(aov1)
 boxplot(cpe.hr~Year,data = cpeSum,
             main="Mean Catch Per Hour")
 ```
+```{r, echo=FALSE}
+(cpe.median <- aggregate(cpe.hr ~ Year, data = cpeSum, FUN = median))
+```
 
 ## Results $H_0$ 1 ##
 
-  There is *no significant difference* in CPUE between years ($F_{1,40}$ = 0.071, p = 0.792).
+  There is *no significant difference* in CPUE between years ($F_{1,40}$ = 0.071, p = 0.792). The median CPUE was 48.36 in **2013**, 38.41 in **2014**, 22.12 in **2015**, 21.53 in **2016**. 
 
 
 
@@ -102,11 +98,11 @@ boxplot(cpe.hr~Year,data = cpeSum,
 
 ```{r, echo=FALSE}
 headtail(gcat)
-
+```
+\newpage
+```{r, echo=FALSE}
 xtabs(caught ~ gcat + Year, data = gcat)
 ```
-
-\newpage
 
 **Make Qcat Variable and Data Frame**
 ```{r Make Qcat Variable, tidy=TRUE}
@@ -149,10 +145,14 @@ summary(aov.Qpls)
 boxplot(cpe.hr ~ Year, data = Qpls.sum,
             main="Mean Catch Per Hour Quality +")
 ```
+```{r, echo=FALSE}
+(Qpls.median <- aggregate(cpe.hr ~ Year, data = Qpls.sum, FUN = median))
+```
+
 
 ## Results $H_0$ 2 ##
 
-  There is *no significant difference* in CPUE for fish > Quality length (300mm) among years 2013 - 2016 ($F_{1,40}$ = 0.515, p = 0.477).
+  There is *no significant difference* in CPUE for fish > Quality length (300mm) among years 2013 - 2016 ($F_{1,40}$ = 0.515, p = 0.477). The median CPUE for largemouth bass Quality length and greater was 16.13 in **2013**, 22.12 in **2014**, 18.80 in **2015**, 12.64 in **2016**.
 
 
 
@@ -195,10 +195,13 @@ summary(aov.Qless)
 boxplot(cpe.hr ~ Year, data = Qless.sum,
             main="Mean Catch Per Hour Quality-")
 ```
+```{r, echo=FALSE}
+(Qless.median <- aggregate(cpe.hr ~ Year, data = Qless.sum, FUN = median))
+```
 
 ## Results $H_0$ 3 ##
 
-  There is *no significat difference* in CPUE for fish < Quality length among years 2013 - 2016 ($F_{1,40}$ = 0.014, p = 0.906).
+  There is *no significat difference* in CPUE for fish < Quality length among years 2013 - 2016 ($F_{1,40}$ = 0.014, p = 0.906). The median CPUE for largemouth bass less than quality length was 28.85 in **2013**, 7.34 in **2014**, 4.31 in **2015**, 10.64 in **2016**.
 
 \vspace{2em}
 
