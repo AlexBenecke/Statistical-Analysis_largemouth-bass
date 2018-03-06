@@ -32,6 +32,11 @@ library(knitr)
 3) $H_0$: There is no difference in cpe for largemouth bass smaller than quality length (300mm) among years 2013 - 2016.
 
 
+4) $H_0$: There is no difference in CPUE of Stock to Quality length largemouth bass among years 2013 - 2016.
+
+5) $H_0$: There is no difference in CPUE of Quality to Preferred length largemouth bass among years 2013 - 2016.
+
+
 \newpage
 
 
@@ -43,6 +48,7 @@ library(knitr)
 
 ```{r Load cpe data, tidy=TRUE}
 gcat <- read.csv("Data/Clean-Data/CPUE-gcat_2013-2017.csv") %>%
+  filterD(Year < 2017) %>%
   filterD(Species==317) %>%
   arrange(Site,Year)
 
@@ -83,7 +89,8 @@ boxplot(cpe.hr~Year,data = cpeSum,
 
 ## Results $H_0$ 1 ##
 
-  There is *no significant difference* in CPUE between years ($F_{1,40}$ = 0.071, p = 0.792). The median CPUE was 48.36 in **2013**, 38.41 in **2014**, 22.12 in **2015**, 21.53 in **2016**. 
+
+  There is *no significant difference* in CPUE among years **2013-2016** ($F_{1,40}$ = 0.071, p = 0.792). The median CPUE was 48.36 in **2013**, 38.41 in **2014**, 22.12 in **2015**, 21.53 in **2016**. 
 
 
 
@@ -248,4 +255,104 @@ legend("topleft",
        cex = 1.5,
        bty = "n")
 ```
+
+
+
+
+# 4) $H_0$: There is no difference in CPUE of Stock to Quality length largemouth bass among years 2013 - 2016.
+
+## Load and Prepare Data ##
+
+```{r create S-Q data object}
+headtail(gcat)
+
+sq <- gcat %>%
+  filterD(gcat=="stock")
+
+str(sq)
+```
+
+\centering
+\begin{minipage}{0.4\textwidth}
+```{r, echo=FALSE}
+knitr::kable(sq[c(1:21),c(1,2,5,7)], format = "latex")
+```
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+```{r, echo=FALSE}
+knitr::kable(sq[c(22:42),c(1,2,5,7)], format = "latex")
+```
+\end{minipage}
+\flushleft
+
+## Test Hypothesis 4 ##
+
+```{r Anova S-Q LMB, tidy=TRUE}
+aov.sq <- aov(cpe.hr ~ Year, data = sq)
+summary(aov.sq)
+```
+```{r, echo=FALSE}
+boxplot(cpe.hr ~ Year, data = sq,
+            main="Mean Catch Per Hour Stock - Quality")
+```
+```{r, echo=FALSE}
+(sq.mean <- aggregate(cpe.hr ~ Year, data = sq, FUN = mean))
+
+(sq.median <- aggregate(cpe.hr ~ Year, data = sq, FUN = median))
+```
+
+## Results $H_0$ 4 ##
+
+ There is *no significat difference* in CPUE for fish *Stock to Quality* length among years 2013 - 2016 ($F_{1,40}$ = 0.29, p = 0.593). The **median** CPUE for largemouth bass stock to quality length was 19.97 in **2013**, 7.34 in **2014**, 0.00 in **2015**, 10.64 in **2016**.
+
+  The **mean** CPUE for largemouth bass stock to quality length was 17.53 in **2013**, 19.24 in **2014**, 5.65 in **2015**, 17.01 in **2016**.
+
+
+
+# 5) $H_0$: There is no difference in CPUE of Quality to Preferred length largemouth bass among years 2013 - 2016.
+
+## Load and Prepare Data ##
+
+```{r create Q-P data object}
+headtail(gcat)
+
+qp <- gcat %>%
+  filterD(gcat=="quality")
+
+str(qp)
+```
+
+\centering
+\begin{minipage}{0.4\textwidth}
+```{r, echo=FALSE}
+knitr::kable(qp[c(1:21),c(1,2,5,7)], format = "latex")
+```
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+```{r, echo=FALSE}
+knitr::kable(qp[c(22:42),c(1,2,5,7)], format = "latex")
+```
+\end{minipage}
+\flushleft
+
+
+## Test Hypothesis 5 ##
+
+```{r Anova Q-P LMB, tidy=TRUE}
+aov.qp <- aov(cpe.hr ~ Year, data = qp)
+summary(aov.qp)
+```
+```{r, echo=FALSE}
+boxplot(cpe.hr ~ Year, data = qp,
+            main="Mean Catch Per Hour Stock - Quality")
+```
+```{r, echo=FALSE}
+(qp.median <- aggregate(cpe.hr ~ Year, data = qp, FUN = median))
+```
+
+
+## Results $H_0$ 5 ##
+
+ There is *no significat difference* in CPUE for fish *Quality to Preferred* length among years 2013 - 2016 ($F_{1,40}$ = 0.25, p = 0.621). The **median** CPUE for largemouth bass quality to preferred length was 16.13 in **2013**, 14.23 in **2014**, 9.93 in **2015**, 12.64 in **2016**.
+
 

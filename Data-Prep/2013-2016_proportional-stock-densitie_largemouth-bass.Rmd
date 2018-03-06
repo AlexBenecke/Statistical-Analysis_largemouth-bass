@@ -44,7 +44,7 @@ psd.13 <- filter(PSD,Year==2013)
 psd.14 <- filter(PSD,Year==2014)
 psd.15 <- filter(PSD,Year==2015)
 psd.16 <- filter(PSD,Year==2016)
-#psd.17 <- filter(PSD,Year==2017)
+psd.17 <- filter(PSD,Year==2017)
 ```
 \newpage
   
@@ -91,10 +91,10 @@ psd.16 <- filter(PSD,Year==2016)
 #save(PSD_CI_16,file = "model-output/PSD_CI_16.rda")
 
 ### 2017
-#(PSD_CI_17 <- psdCalc(~Length, data=psd.17,
-#        species = "Largemouth Bass",
-#        what = "traditional"))
-#save(PSD_CI_17,file = "model-output/PSD_CI_17.rda")
+(PSD_CI_17 <- psdCalc(~Length, data=psd.17,
+        species = "Largemouth Bass",
+        what = "traditional"))
+#3-6-2018#save(PSD_CI_17,file = "model-output/PSD_CI_17.rda")
 ```
 
 **Notice**
@@ -113,7 +113,7 @@ Years <- c("2013", "2014", "2015", "2016")
 PSD.Q <- data.frame(Years,psd.Q)
 names(PSD.Q) <- c("Years", "PSD-Q", "LCI", "UCI")
 PSD.Q
-#1-30-2018#write.csv(PSD.Q, file="Data/Clean-Data/PSD-Q.csv",row.names = FALSE)
+#1-30-2018#write.csv(PSD.Q, file="Data/Clean-Data/summary-data/PSD-Q.csv",row.names = FALSE)
 ```
 
 ```{r Create Data Frame with PSD-P and CI for 2013 - 2016,}
@@ -127,10 +127,68 @@ PSD.P <- data.frame(Years,psd.P)
 names(PSD.P) <- c("Years", "PSD-P", "LCI", "UCI")
 PSD.P
 
-#1-30-2018#write.csv(PSD.P, file="Data/Clean-Data/PSD-P.csv", row.names = FALSE)
+#1-30-2018#write.csv(PSD.P, file="Data/Clean-Data/summary-data/PSD-P.csv", row.names = FALSE)
 ```
 
   New .csv saved in Clean-Data.
+
+
+### Estimate Incrimental PSD and 95% CI
+```{r}
+### 2013
+(PSDXY_CI_13 <- psdCalc(~Length, data=psd.13,
+        species = "Largemouth Bass",
+        what = "incremental"))
+#3-6-2018#save(PSDXY_CI_13,file = "model-output/PSDXY_CI_13.rda")
+
+### 2014
+(PSDXY_CI_14 <- psdCalc(~Length, data=psd.14,
+        species = "Largemouth Bass",
+        what = "incremental"))
+#3-6-2018#save(PSDXY_CI_14,file = "model-output/PSDXY_CI_14.rda")
+
+### 2015
+(PSDXY_CI_15 <- psdCalc(~Length, data=psd.15,
+        species = "Largemouth Bass",
+        what = "incremental"))
+#3-6-2018#save(PSDXY_CI_15,file = "model-output/PSDXY_CI_15.rda")
+
+### 2016
+(PSDXY_CI_16 <- psdCalc(~Length, data=psd.16,
+        species = "Largemouth Bass",
+        what = "incremental"))
+#3-6-2018#save(PSDXY_CI_16,file = "model-output/PSDXY_CI_16.rda")
+
+
+### 2017
+(PSDXY_CI_17 <- psdCalc(~Length, data=psd.17,
+        species = "Largemouth Bass",
+        what = "incremental"))
+#3-6-2018#save(PSDXY_CI_17,file = "model-output/PSDXY_CI_17.rda")
+```
+
+
+### Create .csv with incremental PSD and 95% CI
+
+```{r Create Data Frame with incremental PSD and CI for 2013 - 2016,}
+Years <- c("2013", "2014", "2015", "2016", "2017")
+
+(psd.xy <- rbind(PSDXY_CI_13,
+                PSDXY_CI_16,
+                PSDXY_CI_15,
+                PSDXY_CI_16,
+                PSDXY_CI_17))
+(names <- rep(row.names(PSDXY_CI_13),5))
+(Years <- rep(Years,times=3) %>% sort())
+
+
+PSD.XY <- data.frame(Years,names,psd.xy)
+
+names(PSD.XY) <- c("Years", "PSDX-Y", "Estimate", "LCI", "UCI")
+PSD.XY
+#3-6-2018#write.csv(PSD.XY, file="Data/Clean-Data/summary-data/PSD.XY.csv",row.names = FALSE)
+```
+
 
 
 
