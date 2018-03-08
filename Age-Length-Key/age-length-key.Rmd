@@ -28,18 +28,13 @@ LMB$Site <- factor(LMB$Site)
 LMB$SEXCON <- factor(LMB$SEXCON)
 LMB$Sex <- factor(LMB$Sex)
 
-length(LMB$FID)
-LMB[LMB$FID==55,]
-#LMB <- LMB[-55,] ## Remove FID 55
-length(LMB$FID)
-LMB <- filterD(LMB,!is.na(FID))
-
 str(LMB)
 headtail(LMB)
 ```
 
 ```{r Create Length intervals, tidy=TRUE}
 LMB %<>% mutate(lencat25=lencat(LenCap,w=25))
+LMB %<>% mutate(lencat20=lencat(LenCap,w=20))
 headtail(LMB)
 ```
 ```{r Seperate Aged and Unaged (NA) Fish,tidy=TRUE}
@@ -55,7 +50,7 @@ any(is.na(LMB.aged$AgeCap)) # Better be False
 ```
 
 ```{r Observed Age-Length Key,tidy=TRUE}
-(alk.freq <- xtabs(~lencat25+AgeCap,data = LMB.aged))
+(alk.freq <- xtabs(~lencat20+AgeCap,data = LMB.aged))
 
 rowSums(alk.freq)
 
@@ -66,12 +61,12 @@ round(alk,3)
 ```
 
 ```{r Smoothed or Modeled Age-Length Key, tidy=TRUE}
-LMB.mlr <- multinom(AgeCap~lencat25,data=LMB.aged,maxit=500)
+LMB.mlr <- multinom(AgeCap~lencat20,data=LMB.aged,maxit=500)
 ```
 
 ```{r Predicted Age at Length, tidy=TRUE}
-lens <- seq(100,650,25)
-alk.sm <- predict(LMB.mlr,data.frame(lencat25=lens),type = "probs")
+lens <- seq(100,650,20)
+alk.sm <- predict(LMB.mlr,data.frame(lencat20=lens),type = "probs")
 row.names(alk.sm) <- lens # for clarity
 round(alk.sm,3) #for display purposes
 
@@ -81,16 +76,28 @@ round(alk.sm,3) #for display purposes
 ### Smoothed Age-Length Key Model
 ```{r Displaying the Smoothed Age Length Key Graphically, tidy=TRUE}
 ### Smoothed ALK Model
-alkPlot(alk.sm,type = "area",showLegend = TRUE,leg.cex = 0.7,xlab = "Total Langth (mm)")
+alkPlot(alk.sm,
+        type = "area", 
+        showLegend = TRUE, 
+        leg.cex = 0.7, 
+        xlab = "Total Langth (mm)")
 
-alkPlot(alk.sm,type = "bubble", xlab = "Total Length (mm)")
+alkPlot(alk.sm,
+        type = "bubble", 
+        xlab = "Total Length (mm)")
 ```
 
 ### Age-Length Key
 ```{r Displaying the Age Length Key Graphically , tidy=TRUE}
-alkPlot(alk,type = "area",showLegend = TRUE,leg.cex = 0.7,xlab = "Total Langth (mm)")
+alkPlot(alk,
+        type = "area",
+        showLegend = TRUE,
+        leg.cex = 0.7,
+        xlab = "Total Langth (mm)")
 
-alkPlot(alk,type = "bubble", xlab = "Total Length (mm)")
+alkPlot(alk,
+        type = "bubble", 
+        xlab = "Total Length (mm)")
 ### Doesn't Look Good!!!
 ```
 
