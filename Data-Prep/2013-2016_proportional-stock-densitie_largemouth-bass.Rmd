@@ -187,9 +187,22 @@ PSD.XY <- data.frame(Years,names,psd.xy)
 names(PSD.XY) <- c("Years", "PSDX-Y", "Estimate", "LCI", "UCI")
 PSD.XY
 #3-6-2018#write.csv(PSD.XY, file="Data/Clean-Data/summary-data/PSD.XY.csv",row.names = FALSE)
+
+(display <- PSD.XY[PSD.XY$`PSDX-Y`  != "PSD P-M",])
 ```
 
-
+|  Years |  PSDX-Y | Estimate | LCI | UCI |
+|:------:|:-------:|:--------:|:---:|:---:|
+|   2013 | PSD S-Q |    42    | 30  | 55  |
+|   2013 | PSD Q-P |    41    | 29  | 53  |
+|   2014 | PSD S-Q |    49    | 37  | 61  |
+|   2014 | PSD Q-P |    42    | 30  | 53  |
+|   2015 | PSD S-Q |    21    |  9  | 33  |
+|   2015 | PSD Q-P |    57    | 42  | 72  |
+|   2016 | PSD S-Q |    49    | 37  | 61  |
+|   2016 | PSD Q-P |    42    | 30  | 53  |
+|   2017 | PSD S-Q |    31    | 12  | 51  |
+|   2017 | PSD Q-P |    43    | 22  | 63  |
 
 
 
