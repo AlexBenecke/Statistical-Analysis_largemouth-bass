@@ -75,6 +75,9 @@ Lets start exploring the relative weight data. I have two questions I would like
 aov1 <- lm(Wr~Year,data=Stock)
 #save(aov1,file = "model-output/aov1.rda")
 Anova(aov1)
+summary(aov1)
+
+boxplot(Wr~Year,data=Stock)
 ```
 \newpage
 ```{r Tukey,tidy=TRUE}
@@ -146,13 +149,136 @@ head(pred.1)
 ```
 
 
-### To Be Continued...
+# 2) Wr and Gcat
 
   I will look into the difference in Wr between gcat at a later date. I don't think this matters so much as of now.
 
 
-```{r, tidy=TRUE}
+```{r Summarize Wr by Year and Gcat, echo=FALSE, tidy=TRUE}
+Wr.gcat <- Summarize(Wr~Year + gcat,data = Stock) %>%
+  arrange(gcat)
+
+display.Wr <- data.frame(Wr.gcat[,c(1:3)],
+                round(Wr.gcat[,c(4:10)],2))
+
+print(display.Wr,row.names=FALSE)
+```
+
+**IDK this doesn't look quite right below**
+
+```{r Anova Wr gcat Year, tidy=TRUE}
+gcat.aov <- aov(Wr~  Year*gcat -1, data = Stock)
+#3-7-2018#save(gcat.aov,file = "model-output/gcat.aov.rda")
+
+anova(gcat.aov)
+#summary(lm(Wr~  Year*gcat -1, data = Stock))
+```
+
+```{r gcat.aov Tukey, echo=FALSE, tidy=TRUE}
+Tukey.Wr <- TukeyHSD(gcat.aov)
+
+Tukey.Wr.gcat <- round(TukeyHSD(gcat.aov)$'Year:gcat',3)
+
+(btwn.yr.Tky.Wr.gcat <- Tukey.Wr.gcat[c(1:3,12:13,22,
+                                    39:41,46:47,52,
+                                    61:66),])
+```
+
+  There is *no significant difference* in mean Wr within gabelhouse length categories among years years ($F_{6, 398}$ = 1.53, p = 0.17).
+
+```{r boxplot Wr gcat year}
+
+par(mar=c(6.75,4,0.25,0.25))
+
+boxplot(Wr ~ gcat + Year, data=Stock,
+        at = c(1,2,3,5,6,7,9,10,11,13,14,15),
+        xaxt="n", yaxt="n")
+
+abline(h=100,lty=2,col="green")
+
+mtext(c("Preferred", "Quality", "Stock","Preferred", "Quality", "Stock","Preferred", "Quality", "Stock","Preferred", "Quality", "Stock"),
+     side = 1,
+     line = 0.25,
+     las=2,
+     at = c(1,2,3,5,6,7,9,10,11,13,14,15),
+     cex = 1.25)
+
+mtext(c("2013", "2014", "2015", "2016"),
+     side = 1,
+     line = 5,
+     at = c(2,6,10,14),
+     cex = 1.25)
+
+axis(2,
+     at = seq(0,150,20),
+     las = 2)
+```
+
+
+  I want to see if Wr is different between gcat within each year. Above I show where the relationships of mean Wr for particular gcats between years. 
+
+  
+```{r Seperationg out years}
+Wr.13 <- filterD(Stock,Year==2013)
 Wr.14 <- filterD(Stock,Year==2014)
 Wr.15 <- filterD(Stock,Year==2015)
 Wr.16 <- filterD(Stock,Year==2016)
+
+str(Wr.13)
 ```
+  
+  
+**2013**  
+```{r}
+Wr13.aov <- lm(Wr ~gcat, data = Wr.13)
+anova(Wr13.aov)
+```
+```{r}
+Wr13.mc <- glht(Wr13.aov,mcp(gcat="Tukey"))
+summary(Wr13.mc)
+```
+  
+  There is a *Significant* difference in mean Wr between gabelhouse length categories during **2013** ($F_{2,94}$ = 15.14, p < 0.001). Mean Wr of **Stock** length largemouth bass is *significantly* different from **quality** (Tukey HSD, t = 4.93, p < 0.001) and **preferred** (Tukey HSD, t = 4.11, p < 0.001) length largemouth bass.
+  
+  
+**2014**  
+```{r}
+Wr14.aov <- lm(Wr ~gcat, data = Wr.14)
+anova(Wr14.aov)
+```
+```{r}
+Wr14.mc <- glht(Wr14.aov,mcp(gcat="Tukey"))
+summary(Wr14.mc)
+```
+
+  There is a *Significant* difference in mean Wr between gabelhouse length categories during **2014** ($F_{2,137}$ = 26.32, p < 0.001). Mean Wr of **Stock** length largemouth bass is *significantly* different from **quality** (Tukey HSD, t = 6.04, p < 0.001) and **preferred** (Tukey HSD, t = 5.74, p < 0.001) length largemouth bass.
+  
+  
+**2015**  
+```{r}
+Wr15.aov <- lm(Wr ~gcat, data = Wr.15)
+anova(Wr15.aov)
+```
+```{r}
+Wr15.mc <- glht(Wr15.aov,mcp(gcat="Tukey"))
+summary(Wr15.mc)
+```
+
+  There is a *Significant* difference in mean Wr between gabelhouse length categories during **2015** ($F_{2,64}$ = 17.32, p < 0.001). Mean Wr of **Stock** length largemouth bass is *significantly* different from **quality** (Tukey HSD, t = 3.91, p < 0.001) and **preferred** (Tukey HSD, t = 4.74, p < 0.001) length largemouth bass as well as **quality** and **preferred** (Tukey HSD, t = , p = 0.007) length largemouth bass.
+  
+  
+**2016**  
+```{r}
+Wr16.aov <- lm(Wr ~gcat, data = Wr.16)
+anova(Wr16.aov)
+```
+```{r}
+Wr16.mc <- glht(Wr16.aov,mcp(gcat="Tukey"))
+summary(Wr16.mc)
+```
+  
+  There is a *Significant* difference in mean Wr between gabelhouse length categories during **2016** ($F_{2,103}$ = 8.20, p < 0.001). Mean Wr of **Stock** length largemouth bass is *significantly* different from **quality** (Tukey HSD, t = 3.53, p = 0.002) and **preferred** (Tukey HSD, t = 2.87, p = 0.013) length largemouth bass.
+  
+  
+  
+  
