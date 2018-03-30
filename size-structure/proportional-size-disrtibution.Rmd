@@ -150,9 +150,10 @@ Chisq.PSD_P.yr
 ### PSD-X 2013 - 2016 CPUE
 
 ```{r}
-cpe <- read.csv("Data/Clean-Data/CPUE-gcat_2013-2016.csv") %>%
+cpe <- read.csv("Data/Clean-Data/CPUE-gcat_2013-2017.csv") %>%
   filterD(Species == 317) %>%
   filterD(gcat != "substock") %>%
+  filterD(Year < 2017) %>%
   filterD(!is.na(gcat))
 
 
