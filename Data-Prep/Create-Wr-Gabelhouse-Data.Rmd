@@ -111,12 +111,12 @@ mean(tmp.17$Length)
 
 | Year  | Number of Fish | Number of Sites |       Unique           |
 |:-----:|:--------------:|:---------------:|:----------------------:|
-| 2013  |      113       |         8       | ~1 site (NA)           |
+| 2013  |      113+1     |         8       | ~1 site (NA)           |
 | 2014  |      143       |        11       | 2 unique (1 & 16)      |
 | 2015  |       80       |         9       | 1 Unique (5)           |
 | 2016  |      131       |        10       | 1 Unique (14)          |
 | 2017  |       42       |         8       | 2 unique (3 & 9)       |
-| Total |      511       |                 | 6 maybe 7 Unique Sites |
+| Total |      468+42    |        38+8     | 6 maybe 7 Unique Sites |
   
   12 nearshore sites were sampled annually 2013 - 2017, 10 sites are sampled every year in addition to 2 sites which are sampled every five years. Length and weight data used in our analysis were obtained from 114 largemouth bass caught during 2013, 143 during 2014, 80 during 2015, and 132 during 2016. During 2013 - 2016 a total of 469 largemouth bass were obtained from 18 sites.    
   

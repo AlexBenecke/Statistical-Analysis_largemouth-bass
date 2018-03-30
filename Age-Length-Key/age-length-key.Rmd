@@ -65,13 +65,34 @@ LMB.mlr <- multinom(AgeCap~lencat20,data=LMB.aged,maxit=500)
 ```
 
 ```{r Predicted Age at Length, tidy=TRUE}
-lens <- seq(100,650,20)
+lens <- seq(100,460,20)
 alk.sm <- predict(LMB.mlr,data.frame(lencat20=lens),type = "probs")
 row.names(alk.sm) <- lens # for clarity
 round(alk.sm,3) #for display purposes
 
 ### Much better but still double check the ages from before!!!
 ```
+
+```{r tmp calc mean age at quality length,include=FALSE}
+((0.578*2)+(0.292*3)+(0.1*4)+(0.029*5))/4
+
+
+tmp <- LMB.aged[LMB.aged$lencat20==300,] 
+tmp
+mean(tmp$AgeCap) ## 2.42 yrs
+
+
+LMBL <- read.csv("Data/Clean-Data/2016_largemouth-bass_long-format.csv")
+headtail(LMBL)
+LMBL %<>% mutate(lencat20=lencat(BI.len,w=20))
+headtail(LMBL)
+
+tmp <- LMBL[LMBL$lencat20==300,]
+tmp %>% arrange(FID)
+mean(tmp$Agei) # mean  age at quality length 3.19 year
+
+```
+mean age at quality length 3.19 years.
 
 ### Smoothed Age-Length Key Model
 ```{r Displaying the Smoothed Age Length Key Graphically, tidy=TRUE}
@@ -80,7 +101,7 @@ alkPlot(alk.sm,
         type = "area", 
         showLegend = TRUE, 
         leg.cex = 0.7, 
-        xlab = "Total Langth (mm)")
+        xlab = "Total Length (mm)")
 
 alkPlot(alk.sm,
         type = "bubble", 
@@ -93,7 +114,7 @@ alkPlot(alk,
         type = "area",
         showLegend = TRUE,
         leg.cex = 0.7,
-        xlab = "Total Langth (mm)")
+        xlab = "Total Length (mm)")
 
 alkPlot(alk,
         type = "bubble", 
