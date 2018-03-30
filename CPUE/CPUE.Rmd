@@ -217,6 +217,9 @@ QcatSum <- aggregate(cpe.hr ~ Year + Site + gcatQ, data = Qcat, FUN = sum) %>%
   arrange(Site,Year,gcatQ)
 QcatSum
 ```
+```{r Create QcatSum.csv, echo=FALSE}
+#3-30-2018#write.csv(QcatSum,file = "Data/Clean-Data/tmp/QcatSum.csv", row.names = FALSE)
+```
 
 ```{r, echo=FALSE}
 boxplot(cpe.hr ~ gcatQ*Year, data = QcatSum,
