@@ -1,0 +1,95 @@
+---
+title: "Descriptive Stats"
+author: "Alex J. Benecke"
+date: "March 27, 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(FSA)
+library(tidyverse)
+
+
+```
+
+
+# Sites Surveyed by year
+```{r}
+eff1 <- read.csv("Data/Raw-Data/Effort-Nearshore_2013-2017.csv") %>%
+  arrange(Year,Site) #%>%
+  #filterD(!is.na(STARTTIME))
+```
+```{r}
+## 2013
+tmp13 <- eff1[eff1$Year==2013,]
+
+length(unique(tmp13$Site)) ## 8 (10)
+
+
+## 2014
+tmp14 <- eff1[eff1$Year==2014,]
+
+length(unique(tmp14$Site)) ## 12
+
+## 2015
+tmp15 <- eff1[eff1$Year==2015,]
+
+length(unique(tmp15$Site)) ## 10
+
+## 2016
+tmp16 <- eff1[eff1$Year==2016,]
+
+length(unique(tmp16$Site)) ## 12
+
+## Total sites = 44
+```
+
+| Year | number of Sites |
+|:----:|:---------------:|
+| 2013 |        10       |
+| 2014 |        12       |
+| 2015 |        10       |
+| 2016 |        12       |
+
+
+# Number of Largemouth Bass per Year
+
+```{r, results='hide'}
+bio1 <- read.csv("Data/Raw-Data/Nearshore-Biodat_2013-2017.csv") %>%
+  filterD(Species == 317)
+str(bio1)
+head(bio1)
+```
+```{r}
+## 2013
+bio13 <- bio1[bio1$Year==2013,]
+nrow(bio13) # 114
+
+## 2014
+bio14 <- bio1[bio1$Year==2014,]
+nrow(bio14) ## 143
+
+## 2015
+bio15 <- bio1[bio1$Year==2015,]
+nrow(bio15) ## 80
+
+## 2016
+bio16 <- bio1[bio1$Year==2016,]
+nrow(bio16) ## 144
+
+## n lmb = 481
+```
+
+Table 1.
+
+| Year  | number of Sites | n largemouth bass |
+|:-----:|:---------------:|:-----------------:|
+| 2013  |        10       |         114       |
+| 2014  |        12       |         143       |
+| 2015  |        10       |          80       |
+| 2016  |        12       |         144       |
+| Total |        44       |         481       |      
+
+
