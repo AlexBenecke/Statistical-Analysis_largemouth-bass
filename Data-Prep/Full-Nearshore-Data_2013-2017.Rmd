@@ -55,7 +55,7 @@ tmp <- eff1
 
 (annual.sites <- c(2,4,6,8,10,11,12,15,18,19))
 
-(rotating.13 <- c(17,21)) 
+(rotating.13 <- c(17,21)) ## I think this should be 20 not 21 
 
 (rotating.14 <- c(1,16))
 
@@ -249,13 +249,13 @@ headtail(catch, n = 2)
 cpeSum <- catch %>% group_by(Year,Species) %>%
   summarize(samples = n(), fish = sum(caught),
             mean = mean(cpe.hr), sd = sd(cpe.hr),
-            se = sd/sqrt(samples), RSE = se/mean*100) %>%
+            se = sd/sqrt(samples), RSE = se/mean*100,
+            median = median(cpe.hr)) %>%
   as.data.frame()
 
-cpeSum[cpeSum$Species==317 | cpeSum$Species==314 | cpeSum$Species==316,]
+cpeSum[cpeSum$Species==317 | cpeSum$Species==314 | cpeSum$Species==317,]
 #3-1-2018#write.csv(cpeSum,"Data/Clean-Data/summary-data/cpeSum.csv",row.names = FALSE)
 ```
-
 
 # CPUE by Gabelhouse Length Category
   
@@ -553,6 +553,7 @@ str(cpe)
 ```{r Summarize CPUE by Year Species gcat, tidy=TRUE}
 cpeSum.gcat <- cpe %>% group_by(Year, Species, gcat) %>%
   summarize(samples = n(), fish = sum(caught),
+            median = median(cpe.hr),
             mean = mean(cpe.hr), sd = sd(cpe.hr),
             se = sd/sqrt(samples), RSE = se/mean*100) %>%
   as.data.frame()
@@ -565,7 +566,7 @@ sum.disp <- cpeSum.gcat[cpeSum.gcat$Species==317 & cpeSum.gcat$gcat=="stock" |
                           cpeSum.gcat$Species==317 & cpeSum.gcat$gcat=="preferred",] %>%
   arrange(gcat)
 
-sum.disp <- c(sum.disp[,c(1:5)],round(sum.disp[,c(6:9)],3)) %>% 
+sum.disp <- c(sum.disp[,c(1:5)],round(sum.disp[,c(6:10)],3)) %>% 
   as.data.frame()
 
 print(sum.disp,row.names = FALSE)
