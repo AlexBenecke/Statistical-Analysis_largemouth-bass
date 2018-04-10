@@ -1,0 +1,61 @@
+---
+title: "Figures-PSDx"
+author: "Alex J. Benecke"
+date: "January 22, 2018"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(FSA)
+library(car) ## befor dplyr reduce conflicts with MASS
+library(dplyr)
+library(plotrix)
+library(multcomp)
+library(tidyverse)
+library(magrittr)
+library(Matching)
+```
+
+```{r Load Data}
+psdq <- read.csv("Data/Clean-Data/PSD-Q.csv") 
+
+str(psdq)
+head(psdq)
+```
+
+```{r}
+
+plotCI(psdq$Years,psdq$PSD.Q,
+       ui=psdq$UCI,li=psdq$LCI)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
