@@ -43,10 +43,7 @@ fig4 <- ggplot(catch, aes(x=Age, y=ct, color = Rec)) +
            label = c("S = 54.76", "Z = \  0.60", "A = \  0.45"),
            size = 7)
 
-
 fig4
-
-
 
 ggsave("Figures/figure-4.tiff",fig4, width = 6, height = 6)
 

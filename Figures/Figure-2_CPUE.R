@@ -2,10 +2,6 @@
 library(magrittr)
 library(ggplot2)
 library(extrafont)
-#font_import()
-#y
-#extrafont::loadfonts(device = "win")
-
 
 QcatSum <- read.csv("Data/Clean-Data/tmp/QcatSum.csv")
 
@@ -14,15 +10,13 @@ QcatSum$Year <- factor(QcatSum$Year)
 head(QcatSum)
 str(QcatSum)
 
-
-
 # basic boxplot
 fig2 <- ggplot(QcatSum, aes(x=Year, y=cpe.hr, fill = gcatQ)) +
   geom_boxplot(outlier.color = "black", outlier.shape = 16,
                outlier.size = 2, notch = FALSE)+ 
-  scale_y_continuous("Catch-per-Hour", breaks = seq(0,100,25), 
-                     labels = seq(0,100,25),
-                     limits = c(0,100)) +
+  scale_y_continuous("Catch-per-Hour", breaks = seq(0,150,25), 
+                     labels = seq(0,150,25),
+                     limits = c(0,150)) +
   scale_x_discrete("Year") +
   scale_fill_grey(labels = c("Quality -", "Quality +"),
                   start = 0.8, end = 1) + 
@@ -41,18 +35,6 @@ fig2
 ggsave("Figures/figure-2.tiff",fig2, width = 6, height = 6)
 
 ### Note one outlier not shown Q- 2016
-
-
-#tiff()
-
-### text = element_text(family = "Times New Roman"),
-
-### panel.grid.minor = element_blank(),
-### panel.grid.major = element_blank(),
-
-
-
-
 
 
 

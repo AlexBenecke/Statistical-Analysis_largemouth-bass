@@ -40,28 +40,111 @@ headtail(tmp.female)
 
 
 ### Create VB Function
-LVB <- function(x, Linf, K, t0){
+### Combined sex model (bs = Both Sexes)
+x = seq(1,8,1)
+
+LVB_bs <- function(x, Linf, K, t0){
   Linf = nlme.mod2$coefficients$fixed[[1]]
   K = nlme.mod2$coefficients$fixed[[2]]
   t0 = nlme.mod2$coefficients$fixed[[3]]
   y = Linf * (1 - exp(-K * (x - t0)))
   y
 }
-LVB(5)
-LVB(5) ### Should be the same output
+LVB_bs(x)
 
-head(LMBL)
+  #### Combined LCI
+LVB_bs_LCI <- function(x, Linf, K, t0){
+  Linf <- intervals(nlme.mod2)$fixed[1]
+  K <- intervals(nlme.mod2)$fixed[2]
+  t0 <- intervals(nlme.mod2)$fixed[3]
+  y = Linf * (1 - exp(-K * (x - t0)))
+  y
+}
+LVB_bs_LCI(x)
 
+  #### Combined UCI
+LVB_bs_UCI <- function(x, Linf, K, t0){
+  Linf <- intervals(nlme.mod2)$fixed[7]
+  K <- intervals(nlme.mod2)$fixed[8]
+  t0 <- intervals(nlme.mod2)$fixed[9]
+y = Linf * (1 - exp(-K * (x - t0)))
+y
+}
+LVB_bs_UCI(x)
+
+### Male Sexmodel
+LVB_m <- function(x, Linf, K, t0){
+  Linf = sexmod.l$coefficients$fixed[[1]]
+  K = sexmod.l$coefficients$fixed[[3]]
+  t0 = sexmod.l$coefficients$fixed[[4]]
+  y = Linf * (1 - exp(-K * (x - t0)))
+  y
+}
+LVB_m(x)
+  
+  #### Male VB LCI
+LVB_m_LCI <- function(x, Linf, K, t0){
+  Linf <- intervals(sexmod.l)$fixed[1]
+  K  <- intervals(sexmod.l)$fixed[3]
+  t0 <- intervals(sexmod.l)$fixed[4]
+  y = Linf * (1 - exp(-K * (x - t0)))
+  y
+}
+LVB_m_LCI(x)
+  #### Male VB UCI
+LVB_m_UCI <- function(x, Linf, K, t0){
+  Linf <- intervals(sexmod.l)$fixed[9]
+  K <- intervals(sexmod.l)$fixed[11]
+  t0 <- intervals(sexmod.l)$fixed[12]
+  y = Linf * (1 - exp(-K * (x - t0)))
+  y
+}
+LVB_m_UCI(x)
+
+### Female Sexmodel
+LVB_f <- function(x, Linf, K, t0){
+  Linf = sexmod.l$coefficients$fixed[[2]]
+  K = sexmod.l$coefficients$fixed[[3]]
+  t0 = sexmod.l$coefficients$fixed[[4]]
+  y = Linf * (1 - exp(-K * (x - t0)))
+  y
+}
+LVB_f(x)
+  #### Female VB LCI
+LVB_f_LCI <- function(x, Linf, K, t0){
+  Linf <- intervals(sexmod.l)$fixed[2]
+  K  <- intervals(sexmod.l)$fixed[3]
+  t0 <- intervals(sexmod.l)$fixed[4]
+  y = Linf * (1 - exp(-K * (x - t0)))
+  y
+}
+LVB_f_LCI(x)
+  #### Female VB UCI
+LVB_f_UCI <- function(x, Linf, K, t0){
+  Linf <- intervals(sexmod.l)$fixed[10]
+  K <- intervals(sexmod.l)$fixed[11]
+  t0 <- intervals(sexmod.l)$fixed[12]
+  y = Linf * (1 - exp(-K * (x - t0)))
+  y
+}
+LVB_f_UCI(x)
 
 ### combined sexmodel nlme.mod2
 
-fig5a <- ggplot(LMBL, aes(x=Agei, y= BI.len, 
+(fig5.bs <- ggplot(LMBL, aes(x=Agei, y= BI.len, 
                           color = Sex,
                           shape = Sex)) +
   geom_point(size=2, position = "jitter", alpha = 5/8) +
+  scale_y_continuous("Total Length (mm)", 
+                     breaks = seq(50,450,50), 
+                     labels = seq(50,450,50),
+                     limits = c(50,450)) +
+  scale_x_continuous("Age",
+                     breaks = seq(0,8,1),
+                     labels = seq(0,8,1),
+                     limits = c(0.5,8)) +
   scale_color_grey(start = 0.4, end = 0) + 
   scale_shape_manual(values = c(19,17)) +
-  labs(y="Total Length (mm)", x= "Age") +
   theme_classic() +
   theme(text = element_text(family = "Times New Roman"),
         axis.title.x = element_text(face = "bold", size = 20),
@@ -71,33 +154,14 @@ fig5a <- ggplot(LMBL, aes(x=Agei, y= BI.len,
         legend.title = element_blank(),
         legend.text = element_text(size = 16),
         legend.position = c(0.9,0.2)) +
-  stat_function(fun = LVB)
+  stat_function(fun = LVB_bs) +
+    stat_function(fun = LVB_bs_LCI, linetype = "dashed") +
+    stat_function(fun = LVB_bs_UCI, linetype = "dashed"))
   
-fig5a
-
+fig5.bs
 
 
 ### Male and Female Plots
-### Create VB Function
-LVB.m <- function(x, Linf, K, t0){
-  Linf = sexmod.l$coefficients$fixed[[1]]
-  K = sexmod.l$coefficients$fixed[[3]]
-  t0 = sexmod.l$coefficients$fixed[[4]]
-  y = Linf * (1 - exp(-K * (x - t0)))
-  y
-}
-LVB.m(1)
-
-LVB.f <- function(x, Linf, K, t0){
-  Linf = sexmod.l$coefficients$fixed[[2]]
-  K = sexmod.l$coefficients$fixed[[3]]
-  t0 = sexmod.l$coefficients$fixed[[4]]
-  y = Linf * (1 - exp(-K * (x - t0)))
-  y
-}
-LVB.f(1)
-
-
 
 Female <- LMBL[LMBL$Sex=="Female",] 
 head(Female)
@@ -105,11 +169,19 @@ head(Female)
 Male <- LMBL[LMBL$Sex=="Male",] 
 head(Male)
 
-fig5.male <-ggplot(Male, aes(x=Agei, y= BI.len)) +
-  geom_point(size=2, shape = 17, position = "jitter", alpha = 5/8) +
-  labs(y="Total Length (mm)", x= "Age") +
-  scale_x_continuous(limits = c(0,8)) +
-  scale_y_continuous(limits = c(50,450)) +
+(fig5.male <-ggplot(Male, aes(x=Agei, y= BI.len)) +
+  geom_point(size=2, 
+             shape = 17, 
+             position = "jitter", 
+             alpha = 5/8) +
+  scale_y_continuous("Total Length (mm)",
+                      breaks = seq(50,450,50), 
+                      labels = seq(50,450,50),
+                      limits = c(50,450)) +
+  scale_x_continuous("Age",
+                      breaks = seq(0,8,1),
+                      labels = seq(0,8,1),
+                      limits = c(0.5,8)) +
   theme_classic() +
   theme(text = element_text(family = "Times New Roman"),
         axis.title.x = element_text(face = "bold", size = 20),
@@ -119,16 +191,26 @@ fig5.male <-ggplot(Male, aes(x=Agei, y= BI.len)) +
         legend.title = element_blank(),
         legend.text = element_text(size = 16),
         legend.position = c(0.9,0.2)) +
-  stat_function(fun = LVB.m)
+  stat_function(fun = LVB_m) +
+    stat_function(fun = LVB_m_LCI, linetype = "dashed") +
+    stat_function(fun = LVB_m_UCI, linetype = "dashed"))
 
-ggsave("Figures/figure-5-M.tiff",fig5.male, width = 6, height = 6)
+#ggsave("Figures/figure-5-M.tiff",fig5.male, width = 6, height = 6)
 
 
-fig5.fem <- ggplot(Female, aes(x=Agei, y= BI.len)) +
-  geom_point(size=2, shape = 19, position = "jitter", alpha = 5/8) +
-  labs(y="Total Length (mm)", x= "Age") +
-  scale_x_continuous(limits = c(0,8)) +
-  scale_y_continuous(limits = c(50,450)) +
+(fig5.fem <- ggplot(Female, aes(x=Agei, y= BI.len)) +
+  geom_point(size=2, 
+             shape = 19, 
+             position = "jitter", 
+             alpha = 5/8) +
+  scale_y_continuous("Total Length (mm)", 
+                      breaks = seq(50,450,50), 
+                      labels = seq(50,450,50),
+                      limits = c(50,450)) +
+  scale_x_continuous("Age",
+                      breaks = seq(0,8,1),
+                      labels = seq(0,8,1),
+                      limits = c(0.5,8)) +
   theme_classic() +
   theme(text = element_text(family = "Times New Roman"),
         axis.title.x = element_text(face = "bold", size = 20),
@@ -138,16 +220,43 @@ fig5.fem <- ggplot(Female, aes(x=Agei, y= BI.len)) +
         legend.title = element_blank(),
         legend.text = element_text(size = 16),
         legend.position = c(0.9,0.2)) +
-  stat_function(fun = LVB.f)
+    stat_function(fun = LVB_f) +
+    stat_function(fun = LVB_f_LCI, linetype = "dashed") +
+    stat_function(fun = LVB_f_UCI, linetype = "dashed"))
+
+#ggsave("Figures/figure-5-F.tiff",fig5.fem, width = 6, height = 6)
 
 (fig5.mf <- ggarrange(fig5.male,fig5.fem,
                      labels = c("(a)","(b)"),
-                     ncol = 2, nrow = 1,
-                     align = "h"))
+                     ncol = 2, nrow = 1))
 
-ggsave("Figures/figure-5-F.tiff",fig5.fem, width = 6, height = 6)
 
-ggsave("Figures/figure-5-MF.tiff",fig5.mf, width = 12, height = 6)
+#ggsave("Figures/figure-5-MF.tiff",fig5.mf, width = 12, height = 6)
+
+
+(fig5.a <- ggarrange(fig5.bs, fig5.male,fig5.fem,
+                      labels = c("(a)","(b)", "(c)"),
+                      ncol = 3, nrow = 1))
+
+
+#ggsave("Figures/figure-5-a.tiff",fig5.a,
+#       width = 12, height = 6)
+
+
+
+
+(fig5.b <- ggarrange(fig5.bs,  # First row with scatter plot
+                     ggarrange(fig5.male, fig5.fem, ncol = 2, labels = c("(b)", "(c)")), # Second row with box and dot plots
+                               nrow = 2, 
+                               labels = "(a)"   # Labels of the scatter plot
+))
+
+
+#ggsave("Figures/figure-5-b.tiff",fig5.b,
+#       width = 12, height = 12)
+
+
+
 
 
 

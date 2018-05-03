@@ -22,8 +22,9 @@ str(Stock)
 fig3 <- ggplot(Stock, aes(x=Year, y=Wr, fill = gcat)) +
   geom_boxplot(outlier.color = "black", outlier.shape = 16,
                outlier.size = 2, notch = FALSE) + 
-  scale_y_continuous("Relative Weight", breaks = seq(60,150,20), 
-                     labels = seq(60,150,20)) +
+  scale_y_continuous("Relative Weight", breaks = seq(60,152,10), 
+                     labels = seq(60,150,10),
+                     limits = c(60,152)) +
   scale_x_discrete("Year") +
   scale_fill_grey(labels = c("Stock", "Quality", "Preferred"),
                   start = 0.5, end = 1) + 
