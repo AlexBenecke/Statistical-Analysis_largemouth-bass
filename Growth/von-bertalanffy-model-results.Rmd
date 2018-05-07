@@ -1,0 +1,63 @@
+---
+title: "Von Bertalanffy Growth Models Results"
+author: "Alex J. Benecke"
+date: "May 7, 2018"
+output: pdf_document
+---
+
+
+
+
+```{r Load Model Output, tidy=TRUE}
+load("model-output/nlme.mod2.rda")
+
+load("model-output/sexmod.l.rda")
+```
+
+
+### Results of {$L_{\infty}$}, Sex Model, {sexmod.l}
+
+```{r Results of sexmod.l, echo=FALSE, tidy=TRUE}
+print(paste("Iterations =", sexmod.l$numIter))
+summary(sexmod.l)
+intervals(sexmod.l)
+anova(sexmod.l)
+plot(sexmod.l)
+```
+```{r Try to test difference between male and female Linf, include=FALSE}
+### Try to test difference between male and female Linf
+sexmod.l$coefficients$fixed[c(1:2)]
+sexmod.l$coefficients$random$FID[,1]
+coef(sexmod.l)[,c(1:2)]
+```
+```{r sexmod.l Plot and effects, include=FALSE}
+fixef(sexmod.l)
+ranef(sexmod.l)
+coef(sexmod.l)[1,3]
+```
+
+
+
+### Results of Combined Sex Model, {nlme.mod2}
+
+```{r Results of nlme.mod2, echo=FALSE, tidy=TRUE}
+print(paste("Iterations =", nlme.mod2$numIter))
+summary(nlme.mod2)
+intervals(nlme.mod2)
+anova(nlme.mod2)
+plot(nlme.mod2)
+```
+```{r , include=FALSE}
+### Try to test difference between male and female Linf
+nlme.mod2$coefficients$fixed[c(1:2)]
+nlme.mod2$coefficients$random$FID[,1]
+coef(nlme.mod2)[,c(1:2)]
+```
+```{r nlme.mod2 Plot and effects, include=FALSE}
+fixef(nlme.mod2)
+ranef(nlme.mod2)
+coef(nlme.mod2)[1,3]
+```
+
+
+
